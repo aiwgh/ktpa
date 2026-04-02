@@ -26,9 +26,9 @@
         /* Tùy chỉnh cho Barcode Card */
         .barcode-card {
             background: white;
-            padding: 1.25rem;
+            padding: 1rem;
             border: 1px solid #f1f5f9;
-            border-radius: 1.25rem;
+            border-radius: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -37,6 +37,13 @@
             break-inside: avoid;
             page-break-inside: avoid;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (min-width: 768px) {
+            .barcode-card {
+                padding: 1.25rem;
+                border-radius: 1.25rem;
+            }
         }
 
         .barcode-card:hover {
@@ -117,117 +124,114 @@
     </style>
 </head>
 
-<body class="p-4 md:p-10 bg-[#fbfcfd] text-slate-900 selection:bg-indigo-100">
+<body class="p-3 md:p-10 bg-[#fbfcfd] text-slate-900 selection:bg-indigo-100">
 
     <!-- PHẦN ĐIỀU KHIỂN -->
-    <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(79,70,229,0.05)] border border-slate-100 overflow-hidden mb-10 no-print transition-all">
-        <div class="p-8 md:p-12 bg-[#0f172a] text-white relative overflow-hidden">
+    <div class="max-w-4xl mx-auto bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-[0_10px_40px_rgba(79,70,229,0.04)] border border-slate-100 overflow-hidden mb-6 md:mb-10 no-print transition-all">
+        <div class="p-6 md:p-12 bg-[#0f172a] text-white relative overflow-hidden">
             <!-- Animated background elements -->
-            <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] animate-blob"></div>
-            <div class="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-violet-600/20 rounded-full blur-[80px] animate-blob" style="animation-delay: 2s"></div>
+            <div class="absolute top-[-10%] right-[-10%] w-64 md:w-96 h-64 md:h-96 bg-indigo-600/20 rounded-full blur-[60px] md:blur-[100px] animate-blob"></div>
+            <div class="absolute bottom-[-10%] left-[-10%] w-48 md:w-72 h-48 md:h-72 bg-violet-600/20 rounded-full blur-[50px] md:blur-[80px] animate-blob" style="animation-delay: 2s"></div>
             
-            <div class="flex flex-col sm:flex-row items-center gap-8 relative z-10">
+            <div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 relative z-10 text-center sm:text-left">
                 <div class="relative group">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                    <img src="./logo.png" class="relative w-24 h-24 rounded-2xl border border-white/10 object-cover bg-slate-900 transform transition-all duration-500 group-hover:scale-105" alt="Logo">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl md:rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                    <img src="./logo.png" class="relative w-16 h-16 md:w-24 md:h-24 rounded-xl md:rounded-2xl border border-white/10 object-cover bg-slate-900 transform transition-all duration-500 group-hover:scale-105" alt="Logo">
                 </div>
-                <div class="text-center sm:text-left">
-                    <h1 class="text-3xl md:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-indigo-200">
+                <div>
+                    <h1 class="text-xl md:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-indigo-200">
                         KHO THÀNH PHẨM A
                     </h1>
-                    <div class="flex items-center justify-center sm:justify-start gap-3 mt-2">
-                        <span class="h-px w-8 bg-indigo-500/50"></span>
-                        <p class="text-indigo-400 font-bold tracking-[0.3em] text-xs md:text-sm uppercase">PRO SYSTEM</p>
-                        <span class="h-px w-8 bg-indigo-500/50"></span>
+                    <div class="flex items-center justify-center sm:justify-start gap-2 md:gap-3 mt-1 md:mt-2">
+                        <span class="h-px w-4 md:w-8 bg-indigo-500/50"></span>
+                        <p class="text-indigo-400 font-bold tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-sm uppercase">PRO SYSTEM</p>
+                        <span class="h-px w-4 md:w-8 bg-indigo-500/50"></span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- LEGACY SCANNER MODE TOGGLE - Refined -->
-        <div class="px-8 py-5 bg-slate-50/50 border-y border-slate-100">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-2xl">📱</div>
+        <div class="px-5 md:px-8 py-4 md:py-5 bg-slate-50/50 border-y border-slate-100">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl md:text-2xl">📱</div>
                     <div>
-                        <div class="font-bold text-slate-900">Chế độ Scan đời cũ</div>
-                        <div class="text-xs text-slate-500 font-medium">Tối ưu cho Zebra MC3200, PDA cũ...</div>
+                        <div class="font-bold text-slate-900 text-sm md:text-base">Chế độ Scan đời cũ</div>
+                        <div class="text-[10px] md:text-xs text-slate-500 font-medium">Zebra MC3200, PDA cũ...</div>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="legacy-mode-toggle" class="sr-only peer" onchange="toggleLegacyMode()">
-                    <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div class="w-12 md:w-14 h-6 md:h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 md:after:h-6 after:w-5 md:after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
             </div>
-            <div id="legacy-mode-info" class="hidden mt-4 text-xs font-semibold text-indigo-700 bg-indigo-50 p-4 rounded-2xl border border-indigo-100 animate-fade-in">
-                ✨ Đã kích hoạt: Barcode sẽ hiển thị lớn hơn và nét hơn để các đầu đọc đời cũ dễ nhận diện.
+            <div id="legacy-mode-info" class="hidden mt-3 md:mt-4 text-[10px] md:text-xs font-semibold text-indigo-700 bg-indigo-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-indigo-100 animate-fade-in">
+                ✨ Đã kích hoạt: Barcode hiển thị lớn hơn và nét hơn cho thiết bị cũ.
             </div>
         </div>
 
-        <div class="p-8 md:p-10">
+        <div class="p-6 md:p-10">
             <!-- FORM: TẠO ĐƠN -->
-            <div id="content-simple" class="space-y-6">
+            <div id="content-simple" class="space-y-4 md:space-y-6">
                 <div>
-                    <label class="flex items-center gap-2.5 text-slate-800 text-sm font-bold mb-4 ml-1">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                        Nhập dữ liệu từ Excel (Mã, Số Lượng, Tên Line):
+                    <label class="flex items-center gap-2 text-slate-800 text-xs md:text-sm font-bold mb-3 md:mb-4 ml-1">
+                        <div class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500"></div>
+                        Nhập dữ liệu từ Excel (Mã, SL, Line):
                     </label>
                     <div class="relative group">
-                        <textarea id="simpleInput" rows="6"
-                            class="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-mono text-sm md:text-base resize-none shadow-inner"
+                        <textarea id="simpleInput" rows="5" md:rows="6"
+                            class="w-full p-4 md:p-6 bg-slate-50 border-2 border-slate-100 rounded-[1rem] md:rounded-[1.5rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-mono text-sm md:text-base resize-none shadow-inner"
                             placeholder="Dán mã tại đây... (Ví dụ: 501231231450&#9;2&#9;BV01)"></textarea>
-                        <div class="absolute bottom-4 right-4 text-[10px] font-bold text-slate-400 bg-white px-2 py-1 rounded-lg border border-slate-100 opacity-0 group-focus-within:opacity-100 transition-opacity">
-                            AUTO-SYNC ACTIVE
-                        </div>
                     </div>
                 </div>
 
                 <button onclick="generateSimple()"
-                    class="group w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 px-6 rounded-[1.5rem] shadow-xl shadow-indigo-200 transition-all transform active:scale-[0.99] flex justify-center items-center gap-3 text-lg">
-                    <svg class="w-6 h-6 transform group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    class="group w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 md:py-5 px-6 rounded-[1rem] md:rounded-[1.5rem] shadow-lg shadow-indigo-100 transition-all transform active:scale-[0.98] flex justify-center items-center gap-2 md:gap-3 text-base md:text-lg">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 transform group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     Tạo Barcode Hệ Thống
                 </button>
             </div>
 
             <!-- Selection Actions (Control Panel) -->
-            <div id="selection-actions" class="hidden flex-col gap-6 mt-10 w-full bg-indigo-50/50 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] border border-indigo-100/50 shadow-sm animate-fade-in no-print">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
-                    <label class="flex items-center gap-3 cursor-pointer font-bold text-slate-700 hover:text-indigo-600 transition-colors bg-white px-5 py-3 rounded-2xl border border-slate-200 w-full sm:w-auto shadow-sm">
-                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-5 h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all">
-                        <span class="text-sm">Chọn tất cả (<span id="selected-count" class="text-indigo-600 font-black">0</span>)</span>
+            <div id="selection-actions" class="hidden flex-col gap-4 md:gap-6 mt-8 md:mt-10 w-full bg-indigo-50/50 backdrop-blur-xl p-4 md:p-8 rounded-[1.25rem] md:rounded-[2rem] border border-indigo-100/50 shadow-sm animate-fade-in no-print">
+                <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 md:gap-4 w-full">
+                    <label class="flex items-center gap-2 md:gap-3 cursor-pointer font-bold text-slate-700 hover:text-indigo-600 transition-colors bg-white px-3 md:px-5 py-2 md:py-3 rounded-lg md:rounded-2xl border border-slate-200 shadow-sm">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 md:w-5 md:h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all">
+                        <span class="text-[10px] md:text-sm">Chọn tất cả (<span id="selected-count" class="text-indigo-600 font-black">0</span>)</span>
                     </label>
-                    <button onclick="sortItemsByLine()" class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-3 px-6 rounded-2xl shadow-sm transition-all active:scale-[0.98] text-sm w-full sm:w-auto">
-                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                    <button onclick="sortItemsByLine()" class="flex items-center justify-center gap-1.5 md:gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2 md:py-3 px-3 md:px-6 rounded-lg md:rounded-2xl shadow-sm transition-all active:scale-[0.98] text-[10px] md:text-sm">
+                        <svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
                         Sắp xếp theo Line
                     </button>
                 </div>
                 
-                <div id="line-filters-wrapper" class="hidden flex flex-col gap-3 w-full pt-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Lọc nhanh theo Line</span>
-                    <div id="line-filters-container" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                <div id="line-filters-wrapper" class="hidden flex flex-col gap-2 md:gap-3 w-full pt-1 md:pt-2">
+                    <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Lọc nhanh theo Line</span>
+                    <div id="line-filters-container" class="flex flex-wrap gap-1.5 md:gap-2 max-h-32 md:max-h-40 overflow-y-auto pr-2 custom-scrollbar">
                         <!-- Checkboxes inserted via JS -->
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 justify-end w-full pt-6 border-t border-indigo-100/50 mt-2">
-                    <button onclick="window.print()" class="flex flex-1 items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] sm:flex-none">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                <div class="flex flex-col sm:flex-row gap-3 justify-end w-full pt-4 md:pt-6 border-t border-indigo-100/50 mt-1 md:mt-2">
+                    <button onclick="window.print()" class="flex flex-1 items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] sm:flex-none text-xs md:text-base">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         In hoặc Lưu PDF
                     </button>
                 </div>
             </div>
 
             <!-- Action Buttons Cơ bản -->
-            <div class="flex flex-col md:flex-row items-center justify-center gap-4 mt-10 pt-8 border-t border-slate-100">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4 mt-8 md:mt-10 pt-6 md:pt-8 border-t border-slate-100">
                 <button onclick="clearResults()"
-                    class="w-full md:w-auto flex items-center justify-center py-4 px-8 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold active:scale-[0.98] transition-all">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    class="flex items-center justify-center py-3 md:py-4 px-6 md:px-8 bg-white border border-slate-200 rounded-xl md:rounded-2xl text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold active:scale-[0.98] transition-all text-xs md:text-base">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     Xóa sạch
                 </button>
                 <div class="h-px w-full md:w-12 md:h-px bg-slate-100 hidden md:block"></div>
                 <button onclick="activateScanMode()" id="scan-mode-btn"
-                    class="w-full md:w-auto flex items-center justify-center py-4 px-10 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 font-bold shadow-xl shadow-slate-200 active:scale-[0.98] transition-all">
-                    <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="flex items-center justify-center py-3 md:py-4 px-8 md:px-10 bg-slate-900 text-white rounded-xl md:rounded-2xl hover:bg-slate-800 font-bold shadow-xl shadow-slate-100 active:scale-[0.98] transition-all text-xs md:text-base">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
                     </svg>
                     <span>Chế độ Scan</span>
@@ -241,27 +245,27 @@
         class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl no-print hidden overflow-y-auto">
         <div class="min-h-screen flex flex-col p-4 md:p-10">
             <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/20">🔍</div>
+                <div class="flex justify-between items-center mb-6 md:mb-10">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-indigo-500 flex items-center justify-center text-xl md:text-2xl shadow-lg shadow-indigo-500/20">🔍</div>
                         <div>
-                            <h2 class="text-2xl font-black text-white tracking-tight">Chế độ Scan tập trung</h2>
-                            <p class="text-indigo-300/80 text-sm font-bold uppercase tracking-widest">Efficiency Mode</p>
+                            <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Chế độ Scan</h2>
+                            <p class="text-indigo-300/80 text-[10px] md:text-sm font-bold uppercase tracking-widest">Efficiency Mode</p>
                         </div>
                     </div>
                     <button onclick="exitScanMode()"
-                        class="bg-white/10 hover:bg-white/20 text-white w-12 h-12 rounded-2xl font-bold transition-all flex items-center justify-center text-xl">
+                        class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl font-bold transition-all flex items-center justify-center text-lg md:text-xl">
                         ✕
                     </button>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="bg-white/5 rounded-[2rem] p-8 border border-white/10 mb-8">
-                    <div class="flex justify-between items-end mb-4">
-                        <span class="text-white/60 text-xs font-black uppercase tracking-widest">Tiến trình hoàn thành</span>
-                        <span id="scan-progress-text" class="text-indigo-400 text-2xl font-black font-mono">0/0</span>
+                <div class="bg-white/5 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 border border-white/10 mb-6 md:mb-8">
+                    <div class="flex justify-between items-end mb-3 md:mb-4">
+                        <span class="text-white/60 text-[10px] md:text-xs font-black uppercase tracking-widest">Tiến trình</span>
+                        <span id="scan-progress-text" class="text-indigo-400 text-xl md:text-2xl font-black font-mono">0/0</span>
                     </div>
-                    <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                    <div class="w-full bg-white/10 rounded-full h-2 md:h-3 overflow-hidden">
                         <div id="scan-progress-bar" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full transition-all duration-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]" style="width: 0%">
                         </div>
                     </div>
@@ -270,30 +274,30 @@
                 <!-- Current Item Display -->
                 <div class="flex-1 flex flex-col">
                     <div id="scan-current-display"
-                        class="bg-white rounded-[3rem] p-10 min-h-[400px] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden group">
+                        class="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 min-h-[300px] md:min-h-[400px] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden group">
                         <div class="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white pointer-events-none"></div>
                         <!-- Barcode will be injected here -->
                     </div>
 
                     <!-- Navigation Controls -->
-                    <div class="grid grid-cols-2 gap-4 mt-8">
+                    <div class="grid grid-cols-2 gap-2 md:gap-4 mt-6 md:mt-8">
                         <button onclick="scanPrevious()" id="scan-prev-btn"
-                            class="py-5 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-3xl text-white font-bold transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            class="py-4 md:py-5 px-2 md:px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl md:rounded-3xl text-white font-bold transition-all disabled:opacity-20 disabled:cursor-not-allowed flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3 text-[10px] md:text-base leading-tight">
+                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                             Mã trước
                         </button>
                         <button onclick="scanNext()" id="scan-next-btn"
-                            class="py-5 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-3xl text-white font-bold transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                            Mã tiếp theo
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            class="py-4 md:py-5 px-2 md:px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl md:rounded-3xl text-white font-bold transition-all disabled:opacity-20 disabled:cursor-not-allowed flex flex-col-reverse md:flex-row items-center justify-center gap-1 md:gap-3 text-[10px] md:text-base leading-tight">
+                            Mã tiếp
+                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </button>
                     </div>
 
                     <!-- Mark as Scanned Button -->
                     <button onclick="markAsScanned()" id="scan-mark-btn"
-                        class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-6 px-6 rounded-[2rem] shadow-2xl shadow-indigo-500/20 transition-all transform active:scale-95 text-xl flex items-center justify-center gap-4">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">✓</div>
-                        XÁC NHẬN ĐÃ QUÉT
+                        class="mt-4 md:mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 md:py-6 px-4 md:px-6 rounded-[1.25rem] md:rounded-[2rem] shadow-2xl shadow-indigo-500/20 transition-all transform active:scale-95 text-base md:text-xl flex items-center justify-center gap-2 md:gap-4">
+                        <div class="w-5 h-5 md:w-8 md:h-8 rounded-full bg-white/20 flex items-center justify-center text-[10px] md:text-base">✓</div>
+                        XÁC NHẬN QUÉT
                     </button>
                 </div>
             </div>
@@ -484,7 +488,7 @@
 
             codes.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'barcode-card group relative cursor-pointer hover:border-indigo-400 border border-slate-100 transition-all p-6 min-h-[180px] flex items-center justify-center flex-col bg-white overflow-hidden';
+                card.className = 'barcode-card group relative cursor-pointer hover:border-indigo-400 border border-slate-100 transition-all p-4 md:p-6 min-h-[140px] md:min-h-[180px] flex items-center justify-center flex-col bg-white overflow-hidden';
                 
                 card.dataset.code = item.code;
                 card.dataset.lineName = item.lineName || "";
@@ -497,14 +501,14 @@
                 }
                 if (item.quantity) {
                     plainTextParts.push(`SL: ${item.quantity}`);
-                    htmlInfoParts.push(`<span class="text-slate-400 font-medium mx-2">|</span><span class="text-rose-500 font-black">SL: ${item.quantity}</span>`);
+                    htmlInfoParts.push(`<span class="text-slate-400 font-medium mx-1.5 md:mx-2">|</span><span class="text-rose-500 font-black">SL: ${item.quantity}</span>`);
                 }
                 
                 card.dataset.info = plainTextParts.join(' - ');
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                checkbox.className = 'absolute top-5 left-5 w-6 h-6 cursor-pointer barcode-checkbox rounded-xl border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all z-10';
+                checkbox.className = 'absolute top-3 md:top-5 left-3 md:left-5 w-5 md:w-6 h-5 md:h-6 cursor-pointer barcode-checkbox rounded-lg md:rounded-xl border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all z-10';
                 
                 card.onclick = (e) => {
                     if (e.target !== checkbox) checkbox.checked = !checkbox.checked;
@@ -529,7 +533,7 @@
 
                 if (htmlInfoParts.length > 0) {
                     const info = document.createElement('div');
-                    info.className = 'text-sm md:text-base font-bold text-slate-700 mb-6 mt-4 text-center w-full px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-white group-hover:border-indigo-100 transition-colors';
+                    info.className = 'text-xs md:text-base font-bold text-slate-700 mb-4 md:mb-6 mt-2 md:mt-4 text-center w-full px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 rounded-xl md:rounded-2xl border border-slate-100 group-hover:bg-white group-hover:border-indigo-100 transition-colors';
                     info.innerHTML = htmlInfoParts.join('');
                     card.appendChild(info);
                 }
@@ -541,6 +545,7 @@
                     card.appendChild(svg);
                 } catch (e) {
                     const err = document.createElement('div');
+                    err.className = "text-[10px] md:text-xs";
                     err.innerHTML = `<span class="text-rose-500 font-black">Lỗi mã:</span> ${item.code}`;
                     card.appendChild(err);
                 }
@@ -611,7 +616,8 @@
 
             simpleBarcodes.forEach((card, index) => {
                 const svg = card.querySelector('svg');
-                const infoDiv = card.querySelector('.text-sm.md\\:text-base');
+                // Use a more generic selector for the info div
+                const infoDiv = card.querySelector('.font-bold.text-slate-700'); 
                 const infoHtml = infoDiv ? infoDiv.innerHTML : '';
                 if (svg) {
                     const value = svg.getAttribute('jsbarcode-value') || svg.textContent;
@@ -642,22 +648,24 @@
 
             display.innerHTML = `
                 <div class="w-full flex flex-col items-center relative z-10 animate-fade-in">
-                    <div class="mb-8">
-                        <span class="inline-flex items-center gap-2 px-6 py-2 rounded-full font-black text-xs uppercase tracking-[0.2em] ${isScanned ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'}">
-                            <span class="w-2 h-2 rounded-full ${isScanned ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-500'}"></span>
+                    <div class="mb-4 md:mb-8">
+                        <span class="inline-flex items-center gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-full font-black text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.2em] ${isScanned ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'}">
+                            <span class="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${isScanned ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-500'}"></span>
                             ${isScanned ? 'Đã xác nhận' : 'Đang chờ quét'}
                         </span>
                     </div>
                     ${currentItem.infoHtml ? `
-                        <div class="mb-10 text-center">
-                            <div class="text-3xl md:text-4xl font-black text-slate-800 mb-2">${currentItem.infoHtml}</div>
-                            <div class="h-1 w-12 bg-indigo-500 mx-auto rounded-full opacity-20"></div>
+                        <div class="mb-4 md:mb-10 text-center px-2">
+                            <div class="text-xl md:text-3xl font-black text-slate-800 mb-1 leading-tight flex flex-wrap justify-center items-center gap-1 md:gap-2">
+                                ${currentItem.infoHtml}
+                            </div>
+                            <div class="h-1 w-8 md:w-12 bg-indigo-500 mx-auto rounded-full opacity-20 mt-2 md:mt-3"></div>
                         </div>
                     ` : ''}
-                    <div class="p-8 bg-white rounded-[2rem] shadow-sm border border-slate-100">
-                        <svg id="scan-simple-svg"></svg>
+                    <div class="p-4 md:p-8 bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100">
+                        <svg id="scan-simple-svg" class="max-w-full h-auto"></svg>
                     </div>
-                    <div class="mt-8 text-slate-400 font-mono text-sm font-bold tracking-widest">
+                    <div class="mt-6 md:mt-8 text-slate-400 font-mono text-[10px] md:text-sm font-bold tracking-widest">
                         VAL: ${currentItem.value}
                     </div>
                 </div>
