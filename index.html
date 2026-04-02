@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KHO THÀNH PHẨM A | PRO SYSTEM</title>
+    <!-- Cấu hình PWA & Logo -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="./logo.png">
+    <link rel="apple-touch-icon" href="./logo.png">
+    <!-- Thư viện Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện JsBarcode -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Tùy chỉnh cho Barcode Card */
+        .barcode-card {
+            background: white;
+            padding: 1.25rem;
+            border: 1px solid #f1f5f9;
+            border-radius: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            break-inside: avoid;
+            page-break-inside: avoid;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .barcode-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(79, 70, 229, 0.15);
+            border-color: #e2e8f0;
+        }
+
+        /* Đảm bảo SVG co giãn tốt nhưng không bị bóp méo quá mức */
+        svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            min-width: 150px;
+        }
+
+        /* Input Styles cho Mobile: Chữ to, padding rộng để dễ bấm */
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            font-size: 16px !important;
+        }
+
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+            animation: blob 7s infinite alternate;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        /* Chế độ in ấn */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body { 
+                background-color: white !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+            }
+            .print-area { 
+                width: 100% !important; 
+                display: block !important; 
+            }
+            .barcode-card {
+                box-shadow: none !important;
+                border: 1px solid #eee !important;
+                border-radius: 0 !important;
+                transform: none !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 1rem !important;
+            }
+            .grid {
+                display: grid !important;
+                grid-template-cols: repeat(2, 1fr) !important;
+                gap: 1rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-10 bg-[#fbfcfd] text-slate-900 selection:bg-indigo-100">
+
+    <!-- PHẦN ĐIỀU KHIỂN -->
+    <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(79,70,229,0.05)] border border-slate-100 overflow-hidden mb-10 no-print transition-all">
+        <div class="p-8 md:p-12 bg-[#0f172a] text-white relative overflow-hidden">
+            <!-- Animated background elements -->
+            <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] animate-blob"></div>
+            <div class="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-violet-600/20 rounded-full blur-[80px] animate-blob" style="animation-delay: 2s"></div>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-8 relative z-10">
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                    <img src="./logo.png" class="relative w-24 h-24 rounded-2xl border border-white/10 object-cover bg-slate-900 transform transition-all duration-500 group-hover:scale-105" alt="Logo">
+                </div>
+                <div class="text-center sm:text-left">
+                    <h1 class="text-3xl md:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-indigo-200">
+                        KHO THÀNH PHẨM A
+                    </h1>
+                    <div class="flex items-center justify-center sm:justify-start gap-3 mt-2">
+                        <span class="h-px w-8 bg-indigo-500/50"></span>
+                        <p class="text-indigo-400 font-bold tracking-[0.3em] text-xs md:text-sm uppercase">PRO SYSTEM</p>
+                        <span class="h-px w-8 bg-indigo-500/50"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEGACY SCANNER MODE TOGGLE - Refined -->
+        <div class="px-8 py-5 bg-slate-50/50 border-y border-slate-100">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-2xl">📱</div>
+                    <div>
+                        <div class="font-bold text-slate-900">Chế độ Scan đời cũ</div>
+                        <div class="text-xs text-slate-500 font-medium">Tối ưu cho Zebra MC3200, PDA cũ...</div>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="legacy-mode-toggle" class="sr-only peer" onchange="toggleLegacyMode()">
+                    <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+            <div id="legacy-mode-info" class="hidden mt-4 text-xs font-semibold text-indigo-700 bg-indigo-50 p-4 rounded-2xl border border-indigo-100 animate-fade-in">
+                ✨ Đã kích hoạt: Barcode sẽ hiển thị lớn hơn và nét hơn để các đầu đọc đời cũ dễ nhận diện.
+            </div>
+        </div>
+
+        <div class="p-8 md:p-10">
+            <!-- FORM: TẠO ĐƠN -->
+            <div id="content-simple" class="space-y-6">
+                <div>
+                    <label class="flex items-center gap-2.5 text-slate-800 text-sm font-bold mb-4 ml-1">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                        Nhập dữ liệu từ Excel (Mã, Số Lượng, Tên Line):
+                    </label>
+                    <div class="relative group">
+                        <textarea id="simpleInput" rows="6"
+                            class="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-mono text-sm md:text-base resize-none shadow-inner"
+                            placeholder="Dán mã tại đây... (Ví dụ: 501231231450&#9;2&#9;BV01)"></textarea>
+                        <div class="absolute bottom-4 right-4 text-[10px] font-bold text-slate-400 bg-white px-2 py-1 rounded-lg border border-slate-100 opacity-0 group-focus-within:opacity-100 transition-opacity">
+                            AUTO-SYNC ACTIVE
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="generateSimple()"
+                    class="group w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 px-6 rounded-[1.5rem] shadow-xl shadow-indigo-200 transition-all transform active:scale-[0.99] flex justify-center items-center gap-3 text-lg">
+                    <svg class="w-6 h-6 transform group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Tạo Barcode Hệ Thống
+                </button>
+            </div>
+
+            <!-- Selection Actions (Control Panel) -->
+            <div id="selection-actions" class="hidden flex-col gap-6 mt-10 w-full bg-indigo-50/50 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] border border-indigo-100/50 shadow-sm animate-fade-in no-print">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
+                    <label class="flex items-center gap-3 cursor-pointer font-bold text-slate-700 hover:text-indigo-600 transition-colors bg-white px-5 py-3 rounded-2xl border border-slate-200 w-full sm:w-auto shadow-sm">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-5 h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all">
+                        <span class="text-sm">Chọn tất cả (<span id="selected-count" class="text-indigo-600 font-black">0</span>)</span>
+                    </label>
+                    <button onclick="sortItemsByLine()" class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-3 px-6 rounded-2xl shadow-sm transition-all active:scale-[0.98] text-sm w-full sm:w-auto">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                        Sắp xếp theo Line
+                    </button>
+                </div>
+                
+                <div id="line-filters-wrapper" class="hidden flex flex-col gap-3 w-full pt-2">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Lọc nhanh theo Line</span>
+                    <div id="line-filters-container" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Checkboxes inserted via JS -->
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-end w-full pt-6 border-t border-indigo-100/50 mt-2">
+                    <button onclick="window.print()" class="flex flex-1 items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] sm:flex-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        In hoặc Lưu PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons Cơ bản -->
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 mt-10 pt-8 border-t border-slate-100">
+                <button onclick="clearResults()"
+                    class="w-full md:w-auto flex items-center justify-center py-4 px-8 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold active:scale-[0.98] transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Xóa sạch
+                </button>
+                <div class="h-px w-full md:w-12 md:h-px bg-slate-100 hidden md:block"></div>
+                <button onclick="activateScanMode()" id="scan-mode-btn"
+                    class="w-full md:w-auto flex items-center justify-center py-4 px-10 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 font-bold shadow-xl shadow-slate-200 active:scale-[0.98] transition-all">
+                    <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                    </svg>
+                    <span>Chế độ Scan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCAN MODE INTERFACE - Immersive -->
+    <div id="scan-mode-container"
+        class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl no-print hidden overflow-y-auto">
+        <div class="min-h-screen flex flex-col p-4 md:p-10">
+            <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/20">🔍</div>
+                        <div>
+                            <h2 class="text-2xl font-black text-white tracking-tight">Chế độ Scan tập trung</h2>
+                            <p class="text-indigo-300/80 text-sm font-bold uppercase tracking-widest">Efficiency Mode</p>
+                        </div>
+                    </div>
+                    <button onclick="exitScanMode()"
+                        class="bg-white/10 hover:bg-white/20 text-white w-12 h-12 rounded-2xl font-bold transition-all flex items-center justify-center text-xl">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="bg-white/5 rounded-[2rem] p-8 border border-white/10 mb-8">
+                    <div class="flex justify-between items-end mb-4">
+                        <span class="text-white/60 text-xs font-black uppercase tracking-widest">Tiến trình hoàn thành</span>
+                        <span id="scan-progress-text" class="text-indigo-400 text-2xl font-black font-mono">0/0</span>
+                    </div>
+                    <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                        <div id="scan-progress-bar" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full transition-all duration-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]" style="width: 0%">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Item Display -->
+                <div class="flex-1 flex flex-col">
+                    <div id="scan-current-display"
+                        class="bg-white rounded-[3rem] p-10 min-h-[400px] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white pointer-events-none"></div>
+                        <!-- Barcode will be injected here -->
+                    </div>
+
+                    <!-- Navigation Controls -->
+                    <div class="grid grid-cols-2 gap-4 mt-8">
+                        <button onclick="scanPrevious()" id="scan-prev-btn"
+                            class="py-5 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-3xl text-white font-bold transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            Mã trước
+                        </button>
+                        <button onclick="scanNext()" id="scan-next-btn"
+                            class="py-5 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-3xl text-white font-bold transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                            Mã tiếp theo
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- Mark as Scanned Button -->
+                    <button onclick="markAsScanned()" id="scan-mark-btn"
+                        class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-6 px-6 rounded-[2rem] shadow-2xl shadow-indigo-500/20 transition-all transform active:scale-95 text-xl flex items-center justify-center gap-4">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">✓</div>
+                        XÁC NHẬN ĐÃ QUÉT
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC HIỂN THỊ KẾT QUẢ -->
+    <div id="result-area" class="max-w-4xl mx-auto print-area space-y-6 pb-20">
+        <div id="placeholder" class="flex flex-col items-center justify-center py-20 no-print">
+            <div class="w-20 h-20 rounded-[2rem] bg-slate-100 flex items-center justify-center text-3xl mb-4 grayscale opacity-50">📦</div>
+            <p class="text-slate-400 font-bold text-sm tracking-widest uppercase">Chưa có barcode nào được tạo</p>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL SCAN MODE STATE ---
+        let scanModeActive = false;
+        let scanItems = [];
+        let scanCurrentIndex = 0;
+        let scannedItems = new Set();
+
+        // --- LEGACY SCANNER MODE ---
+        let legacyModeEnabled = false;
+
+        // Track last generation for auto-regenerate
+        let lastGenerationType = null;
+        let lastGenerationParams = null;
+
+        // --- XỬ LÝ GIAO DIỆN ---
+
+        function toggleLegacyMode() {
+            legacyModeEnabled = document.getElementById('legacy-mode-toggle').checked;
+            const infoDiv = document.getElementById('legacy-mode-info');
+
+            if (legacyModeEnabled) {
+                infoDiv.classList.remove('hidden');
+            } else {
+                infoDiv.classList.add('hidden');
+            }
+
+            if (lastGenerationType) {
+                const resultArea = document.getElementById('result-area');
+                const hasContent = !resultArea.querySelector('#placeholder');
+                if (hasContent) {
+                    generateSimple();
+                    showNotification(legacyModeEnabled ?
+                        '✓ Chế độ Máy Cũ: Barcode đã được tối ưu độ nét' :
+                        '✓ Chế độ Chuẩn: Barcode đã quay về kích thước gốc'
+                    );
+                }
+            }
+        }
+
+        function showNotification(message, action = null) {
+            const existing = document.getElementById('toast-notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.id = 'toast-notification';
+            notification.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-[1.5rem] shadow-2xl z-[200] animate-fade-in flex items-center gap-4 border border-white/10 backdrop-blur-xl min-w-[300px] justify-center';
+
+            const msgSpan = document.createElement('span');
+            msgSpan.className = 'font-bold text-sm';
+            msgSpan.innerHTML = message;
+            notification.appendChild(msgSpan);
+
+            if (action) {
+                const actionBtn = document.createElement('button');
+                actionBtn.className = 'bg-indigo-500 text-white text-[10px] px-3 py-1.5 rounded-xl hover:bg-indigo-400 font-black uppercase tracking-wider transition-colors';
+                actionBtn.innerText = action.label;
+                actionBtn.onclick = () => {
+                    action.callback();
+                    notification.remove();
+                };
+                notification.appendChild(actionBtn);
+            }
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification && document.body.contains(notification)) {
+                    notification.classList.add('opacity-0', 'translate-y-4');
+                    notification.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                    setTimeout(() => {
+                        if (notification && document.body.contains(notification)) {
+                            notification.remove();
+                        }
+                    }, 500);
+                }
+            }, 3500);
+        }
+
+        function clearResults() {
+            document.getElementById('result-area').innerHTML = `
+                <div id="placeholder" class="flex flex-col items-center justify-center py-20 no-print">
+                    <div class="w-20 h-20 rounded-[2rem] bg-slate-100 flex items-center justify-center text-3xl mb-4 grayscale opacity-50">📦</div>
+                    <p class="text-slate-400 font-bold text-sm tracking-widest uppercase">Chưa có barcode nào được tạo</p>
+                </div>
+            `;
+            
+            const selActions = document.getElementById('selection-actions');
+            if (selActions) {
+                selActions.classList.add('hidden');
+                selActions.classList.remove('flex');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showNotification("Đã xóa sạch dữ liệu.");
+        }
+
+        function getBarcodeOptions() {
+            if (legacyModeEnabled) {
+                return {
+                    format: "CODE128",
+                    lineColor: "#000",
+                    width: 4,
+                    height: 100,
+                    displayValue: true,
+                    fontSize: 20,
+                    margin: 20,
+                    textMargin: 5
+                };
+            } else {
+                return {
+                    format: "CODE128",
+                    lineColor: "#000",
+                    width: 2,
+                    height: 60,
+                    displayValue: true,
+                    fontSize: 16,
+                    margin: 10
+                };
+            }
+        }
+
+        function generateSimple() {
+            const container = document.getElementById('result-area');
+            container.innerHTML = '';
+
+            let codes = [];
+            let params = {};
+            const input = document.getElementById('simpleInput').value;
+
+            if (!input.trim()) {
+                alert("Bạn chưa nhập mã nào cả!");
+                return;
+            }
+
+            params.inputText = input;
+            const lines = input.split('\n');
+            lines.forEach(line => {
+                let text = line.trim();
+                if (!text) return;
+
+                let codeVal = text;
+                let quantity = null;
+                let lineName = null;
+
+                if (text.includes('\t')) {
+                    const parts = text.split('\t');
+                    codeVal = parts[0].trim();
+                    if (parts.length > 1) quantity = parts[1].trim();
+                    if (parts.length > 2) lineName = parts[2].trim();
+                } else if (text.includes(' ') && text.split(/\s+/).length >= 3) {
+                    const parts = text.split(/\s+/);
+                    codeVal = parts[0].trim();
+                    quantity = parts[1].trim();
+                    lineName = parts.slice(2).join(' ').trim();
+                } else if (text.includes(' ')) {
+                    const parts = text.split(/\s+/);
+                    codeVal = parts[0].trim();
+                    quantity = parts[1].trim();
+                }
+
+                codes.push({ code: codeVal, quantity, lineName });
+            });
+
+            if (codes.length === 0) {
+                alert("Không có mã nào để tạo!");
+                return;
+            }
+
+            lastGenerationType = 'simple';
+            lastGenerationParams = params;
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in';
+
+            codes.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'barcode-card group relative cursor-pointer hover:border-indigo-400 border border-slate-100 transition-all p-6 min-h-[180px] flex items-center justify-center flex-col bg-white overflow-hidden';
+                
+                card.dataset.code = item.code;
+                card.dataset.lineName = item.lineName || "";
+                let plainTextParts = [];
+                let htmlInfoParts = [];
+
+                if (item.lineName) {
+                    plainTextParts.push(`Line: ${item.lineName}`);
+                    htmlInfoParts.push(`<span class="text-indigo-600 font-black">${item.lineName}</span>`);
+                }
+                if (item.quantity) {
+                    plainTextParts.push(`SL: ${item.quantity}`);
+                    htmlInfoParts.push(`<span class="text-slate-400 font-medium mx-2">|</span><span class="text-rose-500 font-black">SL: ${item.quantity}</span>`);
+                }
+                
+                card.dataset.info = plainTextParts.join(' - ');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'absolute top-5 left-5 w-6 h-6 cursor-pointer barcode-checkbox rounded-xl border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all z-10';
+                
+                card.onclick = (e) => {
+                    if (e.target !== checkbox) checkbox.checked = !checkbox.checked;
+                    if (checkbox.checked) {
+                        card.classList.add('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                    } else {
+                        card.classList.remove('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                    }
+                    updateSelectSelectedUI();
+                };
+                checkbox.onclick = (e) => {
+                    e.stopPropagation();
+                    if (checkbox.checked) {
+                        card.classList.add('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                    } else {
+                        card.classList.remove('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                    }
+                    updateSelectSelectedUI();
+                };
+
+                card.appendChild(checkbox);
+
+                if (htmlInfoParts.length > 0) {
+                    const info = document.createElement('div');
+                    info.className = 'text-sm md:text-base font-bold text-slate-700 mb-6 mt-4 text-center w-full px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-white group-hover:border-indigo-100 transition-colors';
+                    info.innerHTML = htmlInfoParts.join('');
+                    card.appendChild(info);
+                }
+
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.className = "transition-transform group-hover:scale-105 duration-500";
+                try {
+                    JsBarcode(svg, item.code, getBarcodeOptions());
+                    card.appendChild(svg);
+                } catch (e) {
+                    const err = document.createElement('div');
+                    err.innerHTML = `<span class="text-rose-500 font-black">Lỗi mã:</span> ${item.code}`;
+                    card.appendChild(err);
+                }
+                grid.appendChild(card);
+            });
+
+            container.appendChild(grid);
+            
+            const selActions = document.getElementById('selection-actions');
+            if (selActions) {
+                selActions.classList.remove('hidden');
+                selActions.classList.add('flex');
+                document.getElementById('selectAllCheckbox').checked = false;
+                
+                const uniqueLines = [...new Set(codes.map(c => c.lineName).filter(Boolean))].sort();
+                const filtersContainer = document.getElementById('line-filters-container');
+                filtersContainer.innerHTML = '';
+                
+                if (uniqueLines.length > 0) {
+                    uniqueLines.forEach(line => {
+                        const wrapper = document.createElement('label');
+                        wrapper.className = 'inline-flex items-center gap-2 bg-white px-4 py-2 border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all shadow-sm active:scale-95';
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.className = 'rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 line-select-cb';
+                        cb.value = line;
+                        cb.onchange = (e) => {
+                            const isChecked = e.target.checked;
+                            const lineCards = document.querySelectorAll(`.barcode-card[data-line-name="${line}"]`);
+                            lineCards.forEach(c => {
+                                const cardCb = c.querySelector('.barcode-checkbox');
+                                cardCb.checked = isChecked;
+                                if (isChecked) {
+                                    c.classList.add('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                                } else {
+                                    c.classList.remove('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                                }
+                            });
+                            updateSelectSelectedUI(false); 
+                        };
+                        wrapper.appendChild(cb);
+                        wrapper.appendChild(document.createTextNode(line));
+                        filtersContainer.appendChild(wrapper);
+                    });
+                    document.getElementById('line-filters-wrapper').classList.remove('hidden');
+                } else {
+                    document.getElementById('line-filters-wrapper').classList.add('hidden');
+                }
+                updateSelectSelectedUI();
+            }
+
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function activateScanMode() {
+            const resultArea = document.getElementById('result-area');
+            const simpleBarcodes = resultArea.querySelectorAll('.barcode-card');
+
+            if (simpleBarcodes.length === 0) {
+                alert("Vui lòng tạo barcode trước khi vào chế độ Scan!");
+                return;
+            }
+
+            scanItems = [];
+            scannedItems = new Set();
+
+            simpleBarcodes.forEach((card, index) => {
+                const svg = card.querySelector('svg');
+                const infoDiv = card.querySelector('.text-sm.md\\:text-base');
+                const infoHtml = infoDiv ? infoDiv.innerHTML : '';
+                if (svg) {
+                    const value = svg.getAttribute('jsbarcode-value') || svg.textContent;
+                    scanItems.push({ index, value, infoHtml });
+                }
+            });
+
+            if (scanItems.length === 0) {
+                alert("Không tìm thấy barcode hợp lệ!");
+                return;
+            }
+
+            scanModeActive = true;
+            scanCurrentIndex = 0;
+            document.body.style.overflow = 'hidden';
+            document.getElementById('scan-mode-container').classList.remove('hidden');
+
+            renderScanItem();
+            updateScanProgress();
+        }
+
+        function renderScanItem() {
+            if (scanItems.length === 0) return;
+
+            const display = document.getElementById('scan-current-display');
+            const currentItem = scanItems[scanCurrentIndex];
+            const isScanned = scannedItems.has(scanCurrentIndex);
+
+            display.innerHTML = `
+                <div class="w-full flex flex-col items-center relative z-10 animate-fade-in">
+                    <div class="mb-8">
+                        <span class="inline-flex items-center gap-2 px-6 py-2 rounded-full font-black text-xs uppercase tracking-[0.2em] ${isScanned ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'}">
+                            <span class="w-2 h-2 rounded-full ${isScanned ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-500'}"></span>
+                            ${isScanned ? 'Đã xác nhận' : 'Đang chờ quét'}
+                        </span>
+                    </div>
+                    ${currentItem.infoHtml ? `
+                        <div class="mb-10 text-center">
+                            <div class="text-3xl md:text-4xl font-black text-slate-800 mb-2">${currentItem.infoHtml}</div>
+                            <div class="h-1 w-12 bg-indigo-500 mx-auto rounded-full opacity-20"></div>
+                        </div>
+                    ` : ''}
+                    <div class="p-8 bg-white rounded-[2rem] shadow-sm border border-slate-100">
+                        <svg id="scan-simple-svg"></svg>
+                    </div>
+                    <div class="mt-8 text-slate-400 font-mono text-sm font-bold tracking-widest">
+                        VAL: ${currentItem.value}
+                    </div>
+                </div>
+            `;
+
+            try {
+                JsBarcode("#scan-simple-svg", currentItem.value, {
+                    ...getBarcodeOptions(),
+                    width: 3,
+                    height: 120,
+                    fontSize: 24
+                });
+            } catch (e) { console.error(e); }
+
+            document.getElementById('scan-prev-btn').disabled = scanCurrentIndex === 0;
+            document.getElementById('scan-next-btn').disabled = scanCurrentIndex === scanItems.length - 1;
+
+            const markBtn = document.getElementById('scan-mark-btn');
+            if (isScanned) {
+                markBtn.className = 'mt-6 w-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-black py-6 px-6 rounded-[2rem] transition-all transform active:scale-95 text-xl flex items-center justify-center gap-4';
+                markBtn.innerHTML = '<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-400">✕</div> HỦY XÁC NHẬN';
+            } else {
+                markBtn.className = 'mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-6 px-6 rounded-[2rem] shadow-2xl shadow-indigo-500/20 transition-all transform active:scale-95 text-xl flex items-center justify-center gap-4';
+                markBtn.innerHTML = '<div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">✓</div> XÁC NHẬN ĐÃ QUÉT';
+            }
+        }
+
+        function updateScanProgress() {
+            const scannedCount = scannedItems.size;
+            const totalCount = scanItems.length;
+            const percentage = totalCount > 0 ? (scannedCount / totalCount) * 100 : 0;
+            document.getElementById('scan-progress-text').innerText = `${scannedCount}/${totalCount}`;
+            document.getElementById('scan-progress-bar').style.width = `${percentage}%`;
+        }
+
+        function scanPrevious() {
+            if (scanCurrentIndex > 0) {
+                scanCurrentIndex--;
+                renderScanItem();
+            }
+        }
+
+        function scanNext() {
+            if (scanCurrentIndex < scanItems.length - 1) {
+                scanCurrentIndex++;
+                renderScanItem();
+            }
+        }
+
+        function markAsScanned() {
+            const isScanned = scannedItems.has(scanCurrentIndex);
+            if (isScanned) {
+                scannedItems.delete(scanCurrentIndex);
+                showNotification("Đã hủy xác nhận mã này.");
+            } else {
+                scannedItems.add(scanCurrentIndex);
+                if (scanCurrentIndex < scanItems.length - 1) {
+                    setTimeout(() => scanNext(), 300);
+                } else {
+                    showNotification("🎉 Đã hoàn thành quét toàn bộ danh sách!");
+                }
+            }
+            renderScanItem();
+            updateScanProgress();
+        }
+
+        function exitScanMode() {
+            scanModeActive = false;
+            document.body.style.overflow = '';
+            document.getElementById('scan-mode-container').classList.add('hidden');
+        }
+
+        function toggleSelectAll(mainCheckbox) {
+            const isChecked = mainCheckbox.checked;
+            const checkboxes = document.querySelectorAll('.barcode-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+                const card = cb.closest('.barcode-card');
+                if (isChecked) {
+                    card.classList.add('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                } else {
+                    card.classList.remove('border-indigo-500', 'bg-indigo-50/30', 'ring-4', 'ring-indigo-500/5');
+                }
+            });
+            updateSelectSelectedUI();
+        }
+
+        function updateSelectSelectedUI(syncFilters = true) {
+            const checkboxes = document.querySelectorAll('.barcode-checkbox');
+            const checkedCount = document.querySelectorAll('.barcode-checkbox:checked').length;
+            document.getElementById('selected-count').innerText = checkedCount;
+            const selectAllCheck = document.getElementById('selectAllCheckbox');
+            
+            if (checkboxes.length > 0) {
+                selectAllCheck.checked = (checkedCount === checkboxes.length);
+            }
+
+            if (syncFilters) {
+                const lineCheckboxes = document.querySelectorAll('.line-select-cb');
+                lineCheckboxes.forEach(lcb => {
+                    const lineName = lcb.value;
+                    const itemsInLine = document.querySelectorAll(`.barcode-card[data-line-name="${lineName}"]`);
+                    if (itemsInLine.length > 0) {
+                        const allChecked = Array.from(itemsInLine).every(card => card.querySelector('.barcode-checkbox').checked);
+                        lcb.checked = allChecked;
+                    }
+                });
+            }
+        }
+
+        function sortItemsByLine() {
+            const grid = document.querySelector('#result-area .grid');
+            if (!grid) return;
+            const cards = Array.from(grid.querySelectorAll('.barcode-card'));
+            if (cards.length === 0) return;
+            cards.sort((a, b) => {
+                const lineA = a.dataset.lineName || "ZZZZZ"; 
+                const lineB = b.dataset.lineName || "ZZZZZ";
+                if (lineA < lineB) return -1;
+                if (lineA > lineB) return 1;
+                const codeA = a.dataset.code || "";
+                const codeB = b.dataset.code || "";
+                return codeA.localeCompare(codeB);
+            });
+            cards.forEach(card => grid.appendChild(card));
+            showNotification("Đã sắp xếp mã theo Line.");
+        }
+
+        async function copySelectedAsImage() {
+            // Function removed as per user request
+        }
+
+        async function downloadSelectedAsFiles() {
+            // Function removed as per user request
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (document.getElementById('simpleInput').value.trim()) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+
+</html>
