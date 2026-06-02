@@ -13,6 +13,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Thư viện JsBarcode -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <!-- Thư viện sql.js để đọc file SQLite -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
@@ -92,6 +94,33 @@
             background: #cbd5e1;
         }
 
+        /* Tab Styles */
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: #4f46e5;
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #4f46e5;
+            border-radius: 99px;
+        }
+
+        /* Database Lookup Styles */
+        .db-search-input {
+            transition: all 0.3s;
+        }
+        .db-search-input:focus {
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
         /* Chế độ in ấn */
         @media print {
             .no-print {
@@ -106,22 +135,92 @@
                 width: 100% !important; 
                 display: block !important; 
             }
+            
+            /* DB Lookup Print - 3 cols A4 */
+            .db-print-header {
+                display: block !important;
+                font-size: 18px !important;
+                font-weight: 800 !important;
+                text-align: center !important;
+                margin-bottom: 12px !important;
+                text-transform: uppercase !important;
+                border-bottom: 2px solid #000 !important;
+                padding-bottom: 6px !important;
+            }
+            /* Grid 3 cột - Cân bằng giữa mật độ và khả năng quét */
+            .grid {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px 6px !important;
+            }
+            
+            /* Barcode card - Tăng kích thước để lấp đầy trang và dễ đọc hơn */
             .barcode-card {
                 box-shadow: none !important;
-                border: 1px solid #eee !important;
-                border-radius: 0 !important;
+                border: 1px solid #000 !important;
+                border-radius: 4px !important;
                 transform: none !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                margin-bottom: 1rem !important;
+                margin-bottom: 2px !important;
+                padding: 10px 2px !important; /* Giảm lề ngang của card để barcode dài hơn */
+                min-height: 110px !important; /* Tối ưu để chứa ~8 hàng nhãn trên 1 trang A4 */
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                align-items: center !important;
             }
-            .grid {
-                display: grid !important;
-                grid-template-cols: repeat(2, 1fr) !important;
-                gap: 1rem !important;
+            
+            /* SVG barcode - Tối ưu cho máy quét (PDA/Zebra) */
+            .barcode-card svg {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 50px !important;
+                margin: 4px 0 !important;
+            }
+            
+            /* Text sizes - Tăng lên để dễ đọc */
+            .barcode-card .text-xs, 
+            .barcode-card .text-sm,
+            .barcode-card .text-base {
+                font-size: 10px !important;
+                margin-bottom: 2px !important;
+                margin-top: 0 !important;
+                line-height: 1.2 !important;
+                font-weight: 700 !important;
+                text-align: center !important;
+            }
+            .barcode-card .font-black {
+                font-size: 11px !important;
+                text-decoration: underline !important;
+            }
+            
+            /* Thông tin phụ bên dưới barcode (giá trị mã vạch) */
+            .barcode-card div:last-child {
+                font-size: 9px !important;
+                margin-top: 2px !important;
+                font-weight: 600 !important;
+                color: #000 !important;
+                background: #f0f0f0 !important;
+                padding: 1px 4px !important;
+                border-radius: 2px !important;
+            }
+            /* Hide checkbox when printing */
+            .barcode-card input[type="checkbox"] {
+                display: none !important;
+            }
+            /* Hide copy text when printing */
+            .barcode-card .cursor-pointer {
+                display: none !important;
             }
         }
-    </style>
+        
+        .db-print-header { display: none; }
+         
+         @media screen {
+             .no-screen { display: none !important; }
+         }
+     </style>
 </head>
 
 <body class="p-3 md:p-10 bg-[#fbfcfd] text-slate-900 selection:bg-indigo-100">
@@ -151,29 +250,19 @@
             </div>
         </div>
 
-        <!-- LEGACY SCANNER MODE TOGGLE - Refined -->
-        <div class="px-5 md:px-8 py-4 md:py-5 bg-slate-50/50 border-y border-slate-100">
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3 md:gap-4">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl md:text-2xl">📱</div>
-                    <div>
-                        <div class="font-bold text-slate-900 text-sm md:text-base">Chế độ Scan đời cũ</div>
-                        <div class="text-[10px] md:text-xs text-slate-500 font-medium">Zebra MC3200, PDA cũ...</div>
-                    </div>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="legacy-mode-toggle" class="sr-only peer" onchange="toggleLegacyMode()">
-                    <div class="w-12 md:w-14 h-6 md:h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 md:after:h-6 after:w-5 md:after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-            </div>
-            <div id="legacy-mode-info" class="hidden mt-3 md:mt-4 text-[10px] md:text-xs font-semibold text-indigo-700 bg-indigo-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-indigo-100 animate-fade-in">
-                ✨ Đã kích hoạt: Barcode hiển thị lớn hơn và nét hơn cho thiết bị cũ.
-            </div>
+        <!-- TAB NAVIGATION -->
+        <div class="flex border-b border-slate-100 px-6 md:px-10 bg-white sticky top-0 z-20">
+            <button onclick="switchTab('create')" id="tab-create" class="tab-btn active px-4 md:px-8 py-4 md:py-5 text-sm md:text-base font-bold text-slate-400 hover:text-slate-600">
+                Tạo Barcode
+            </button>
+            <button onclick="switchTab('lookup')" id="tab-lookup" class="tab-btn px-4 md:px-8 py-4 md:py-5 text-sm md:text-base font-bold text-slate-400 hover:text-slate-600">
+                Tra cứu Database
+            </button>
         </div>
 
         <div class="p-6 md:p-10">
-            <!-- FORM: TẠO ĐƠN -->
-            <div id="content-simple" class="space-y-4 md:space-y-6">
+            <!-- TAB 1: TẠO ĐƠN -->
+            <div id="tab-content-create" class="space-y-4 md:space-y-6">
                 <div>
                     <label class="flex items-center gap-2 text-slate-800 text-xs md:text-sm font-bold mb-3 md:mb-4 ml-1">
                         <div class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500"></div>
@@ -192,6 +281,92 @@
                     Tạo Barcode Hệ Thống
                 </button>
             </div>
+
+            <!-- TAB 2: TRA CỨU DATABASE -->
+            <div id="tab-content-lookup" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div id="db-loading-status" class="flex-1 flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-xs font-bold animate-pulse">
+                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Đang tải cơ sở dữ liệu...
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tìm theo Barcode</label>
+                        <input type="text" id="db-search-barcode" class="db-search-input w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white text-sm" placeholder="Nhập mã vạch...">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã Item</label>
+                        <input type="text" id="db-search-item" class="db-search-input w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white text-sm uppercase" placeholder="Ví dụ: 1011B960">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Màu sắc (Color)</label>
+                        <input type="text" id="db-search-color" class="db-search-input w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white text-sm" placeholder="Ví dụ: 004">
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Loại tem</label>
+                        <select id="db-search-type" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white text-sm font-bold">
+                            <option value="UPC">UPC (Chuẩn)</option>
+                            <option value="JAN">JAN (Nhật Bản)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="dbLookup()" id="db-lookup-btn" disabled
+                            class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-bold py-4 px-10 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex justify-center items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Tra cứu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Size Selection Area -->
+                <div id="db-size-selection" class="hidden space-y-4 animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Chọn Size cần in</label>
+                        <label class="flex items-center gap-2 cursor-pointer text-[10px] font-bold text-indigo-600">
+                            <input type="checkbox" id="db-select-all-sizes" onchange="toggleDbSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                            Chọn tất cả
+                        </label>
+                    </div>
+                    <div id="db-size-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                        <!-- Sizes will be loaded here -->
+                    </div>
+                    
+                    <button onclick="generateDbBarcodes()"
+                        class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-xl shadow-xl transition-all active:scale-[0.98] flex justify-center items-center gap-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Tạo Barcode từ Database
+                    </button>
+                </div>
+            </div>
+
+            <!-- SHARED TOGGLE Area -->
+            <div class="px-5 md:px-8 py-4 md:py-5 bg-slate-50/50 border-y border-slate-100 -mx-6 md:-mx-10 mt-8">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl md:text-2xl">📱</div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm md:text-base">Chế độ Scan đời cũ</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Zebra MC3200, PDA cũ...</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="legacy-mode-toggle" class="sr-only peer" onchange="toggleLegacyMode()">
+                        <div class="w-12 md:w-14 h-6 md:h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 md:after:h-6 after:w-5 md:after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+                <div id="legacy-mode-info" class="hidden mt-3 md:mt-4 text-[10px] md:text-xs font-semibold text-indigo-700 bg-indigo-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-indigo-100 animate-fade-in">
+                    ✨ Đã kích hoạt: Barcode hiển thị lớn hơn và nét hơn cho thiết bị cũ.
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 md:p-10 pt-0">
+            <!-- (Selection Actions and Action Buttons will follow) -->
 
             <!-- Selection Actions (Control Panel) -->
             <div id="selection-actions" class="hidden flex-col gap-4 md:gap-6 mt-8 md:mt-10 w-full bg-indigo-50/50 backdrop-blur-xl p-4 md:p-8 rounded-[1.25rem] md:rounded-[2rem] border border-indigo-100/50 shadow-sm animate-fade-in no-print">
@@ -313,21 +488,381 @@
     </div>
 
     <script>
-        // --- GLOBAL SCAN MODE STATE ---
+        // --- GLOBAL STATE ---
         let scanModeActive = false;
         let scanItems = [];
         let scanCurrentIndex = 0;
         let scannedItems = new Set();
-
-        // --- LEGACY SCANNER MODE ---
         let legacyModeEnabled = false;
-
-        // Track last generation for auto-regenerate
         let lastGenerationType = null;
         let lastGenerationParams = null;
+        
+        // Database State
+        let db = null;
+        let SQL = null;
+        let dbLoaded = false;
+        let currentDbResults = [];
+        let tableName = "barcode_data"; // Default, will detect
 
-        // --- XỬ LÝ GIAO DIỆN ---
+        // --- TAB SYSTEM ---
+        function switchTab(tab) {
+            const createBtn = document.getElementById('tab-create');
+            const lookupBtn = document.getElementById('tab-lookup');
+            const createContent = document.getElementById('tab-content-create');
+            const lookupContent = document.getElementById('tab-content-lookup');
 
+            if (tab === 'create') {
+                createBtn.classList.add('active');
+                lookupBtn.classList.remove('active');
+                createContent.classList.remove('hidden');
+                lookupContent.classList.add('hidden');
+            } else {
+                createBtn.classList.add('active'); // Wait, should be lookupBtn
+                lookupBtn.classList.add('active');
+                createBtn.classList.remove('active');
+                createContent.classList.add('hidden');
+                lookupContent.classList.remove('hidden');
+                
+                if (!dbLoaded) {
+                    initDatabase();
+                }
+            }
+            clearResults();
+        }
+
+        // --- DATABASE LOGIC ---
+        async function initDatabase() {
+            const statusDiv = document.getElementById('db-loading-status');
+            const lookupBtn = document.getElementById('db-lookup-btn');
+            
+            try {
+                const config = {
+                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+                };
+                SQL = await initSqlJs(config);
+                
+                const response = await fetch('./barcodeinbox.sqlite');
+                if (!response.ok) throw new Error("Không thể tải file database. Đảm bảo file tồn tại trong thư mục gốc.");
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const uInt8Array = new Uint8Array(arrayBuffer);
+                
+                db = new SQL.Database(uInt8Array);
+                
+                // Detect table name
+                const res = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+                if (res.length > 0 && res[0].values.length > 0) {
+                    tableName = res[0].values[0][0];
+                }
+                
+                dbLoaded = true;
+                statusDiv.innerHTML = `✅ Đã kết nối Database: <b>${tableName}</b>`;
+                statusDiv.classList.remove('bg-amber-50', 'border-amber-100', 'text-amber-700', 'animate-pulse');
+                statusDiv.classList.add('bg-emerald-50', 'border-emerald-100', 'text-emerald-700');
+                lookupBtn.disabled = false;
+                
+                setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+                
+            } catch (err) {
+                console.error(err);
+                statusDiv.innerHTML = '❌ Lỗi: ' + err.message;
+                statusDiv.classList.remove('bg-amber-50', 'border-amber-100', 'text-amber-700', 'animate-pulse');
+                statusDiv.classList.add('bg-rose-50', 'border-rose-100', 'text-rose-700');
+            }
+        }
+
+        function dbLookup() {
+            if (!db) return;
+            
+            const barcodeVal = document.getElementById('db-search-barcode').value.trim();
+            const itemVal = document.getElementById('db-search-item').value.trim().toUpperCase();
+            const colorVal = document.getElementById('db-search-color').value.trim();
+            const typeVal = document.getElementById('db-search-type').value;
+            
+            let query = "";
+            let params = [];
+            
+            // Lay tat ca ban ghi thoa man dieu kien (khong dung GROUP BY)
+            if (barcodeVal) {
+                query = `SELECT * FROM ${tableName} WHERE barcode = ?`;
+                params = [barcodeVal];
+            } else if (itemVal && colorVal) {
+                query = `SELECT * FROM ${tableName} WHERE item = ? AND clr = ? AND bar_type = ?`;
+                params = [itemVal, colorVal, typeVal];
+            } else {
+                alert("Vui long nhap Barcode HOAC Ma Item + Mau sac.");
+                return;
+            }
+            
+            try {
+                const stmt = db.prepare(query);
+                stmt.bind(params);
+                
+                // Buoc 1: Lay tat ca ban ghi thô
+                const rawResults = [];
+                while (stmt.step()) {
+                    rawResults.push(stmt.getAsObject());
+                }
+                stmt.free();
+                
+                if (rawResults.length === 0) {
+                    alert("Khong tim thay du lieu phu hop trong bang " + tableName);
+                    document.getElementById('db-size-selection').classList.add('hidden');
+                    return;
+                }
+                
+                // Buoc 2: Gom nhom theo barcode va gop du lieu size
+                const mergedMap = new Map();
+                
+                rawResults.forEach(row => {
+                    const key = row.barcode;
+                    
+                    if (!mergedMap.has(key)) {
+                        // Tao ban ghi moi voi danh sach sizes
+                        mergedMap.set(key, {
+                            ...row,
+                            allSizes: collectUniqueSizes(row)
+                        });
+                    } else {
+                        // Gom them sizes tu ban ghi hien tai
+                        const existing = mergedMap.get(key);
+                        const newSizes = collectUniqueSizes(row);
+                        
+                        // Gop size2 neu chua co
+                        if ((!existing.size2 || existing.size2 === "null") && 
+                            row.size2 && row.size2 !== "null") {
+                            existing.size2 = row.size2;
+                        }
+                        
+                        // Gop them sizes moi
+                        newSizes.forEach(s => {
+                            if (!existing.allSizes.includes(s)) {
+                                existing.allSizes.push(s);
+                            }
+                        });
+                    }
+                });
+                
+                // Chuyển Map thành mảng và thực hiện "bung" (expand) các size
+                const expandedResults = [];
+                
+                mergedMap.forEach((baseItem, barcode) => {
+                    const uniqueSizes = [...new Set(baseItem.allSizes)].sort((a, b) => {
+                        return parseSizeToNumeric(a) - parseSizeToNumeric(b);
+                    });
+                    
+                    if (uniqueSizes.length > 0) {
+                        uniqueSizes.forEach(size => {
+                            expandedResults.push({
+                                ...baseItem,
+                                displaySize: size,
+                                barcode: barcode
+                            });
+                        });
+                    } else {
+                        // Trường hợp không có size nào (hiếm gặp)
+                        expandedResults.push({
+                            ...baseItem,
+                            displaySize: baseItem.size1 || "N/A",
+                            barcode: barcode
+                        });
+                    }
+                });
+                
+                currentDbResults = expandedResults;
+                 
+                 // Sắp xếp lại toàn bộ kết quả theo size để hiển thị hợp lý
+                  currentDbResults.sort((a, b) => {
+                      return parseSizeToNumeric(a.displaySize) - parseSizeToNumeric(b.displaySize);
+                  });
+                 
+                 renderSizeGrid(currentDbResults);
+                document.getElementById('db-size-selection').classList.remove('hidden');
+                document.getElementById('db-size-selection').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (err) {
+                alert("Loi truy van: " + err.message);
+            }
+        }
+        
+        // Ham ho tro: Thu thap tat ca cac size tu mot ban ghi
+        function collectUniqueSizes(row) {
+            const sizes = [];
+            
+            // Thu thap size1
+            if (row.size1 && row.size1 !== "null" && row.size1.trim() !== "") {
+                sizes.push(row.size1.trim());
+            }
+            
+            // Thu thap size2
+            if (row.size2 && row.size2 !== "null" && row.size2.trim() !== "") {
+                const s2 = row.size2.trim();
+                if (!sizes.includes(s2)) {
+                    sizes.push(s2);
+                }
+            }
+            
+            return sizes;
+        }
+
+        // Ham ho tro: Chuyen doi size chu thanh gia tri so de sap xep (4H = 4.5)
+        function parseSizeToNumeric(sizeStr) {
+            if (!sizeStr) return 0;
+            let val = parseFloat(sizeStr) || 0;
+            if (sizeStr.toUpperCase().endsWith('H')) {
+                val += 0.5;
+            }
+            return val;
+        }
+
+        // Hàm helper để lấy size hiển thị
+        function getDisplaySize(row) {
+            // Neu co displaySize (tu du lieu gop), su dung no
+            if (row.displaySize) {
+                return row.displaySize;
+            }
+            
+            // Kiem tra uniqueSizes (da duoc xu ly)
+            if (row.uniqueSizes && row.uniqueSizes.length > 0) {
+                return row.uniqueSizes.join(', ');
+            }
+            
+            // Kiem tra allSizes (chua duoc loc)
+            if (row.allSizes && row.allSizes.length > 0) {
+                return [...new Set(row.allSizes)].join(', ');
+            }
+            
+            // Mac dinh: Thu tu uu tien size2 > size1
+            if (row.bar_type === "JAN") {
+                if (row.size2 && row.size2.trim() !== "" && row.size2 !== "null") {
+                    return row.size2;
+                }
+                return row.size1 || "";
+            }
+            
+            // Mac dinh cho UPC va cac loai khac
+            let sizeText = row.size1 || "";
+            if (row.size2 && row.size2.trim() !== "" && row.size2 !== "null") {
+                sizeText += ` (${row.size2})`;
+            }
+            return sizeText;
+        }
+
+        function renderSizeGrid(results) {
+            const grid = document.getElementById('db-size-grid');
+            grid.innerHTML = '';
+            document.getElementById('db-select-all-sizes').checked = false;
+            
+            results.forEach((row, index) => {
+                const label = document.createElement('label');
+                label.className = 'flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all';
+                
+                const sizeText = getDisplaySize(row);
+                
+                label.innerHTML = `
+                    <input type="checkbox" class="db-size-checkbox w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="${index}">
+                    <span class="text-xs font-bold text-slate-700">${sizeText}</span>
+                `;
+                grid.appendChild(label);
+            });
+        }
+
+        function toggleDbSelectAll(mainCheckbox) {
+            const checkboxes = document.querySelectorAll('.db-size-checkbox');
+            checkboxes.forEach(cb => cb.checked = mainCheckbox.checked);
+        }
+
+        function generateDbBarcodes() {
+            const selectedIndexes = Array.from(document.querySelectorAll('.db-size-checkbox:checked')).map(cb => parseInt(cb.value));
+            
+            if (selectedIndexes.length === 0) {
+                alert("Vui lòng chọn ít nhất một size.");
+                return;
+            }
+            
+            const container = document.getElementById('result-area');
+            container.innerHTML = '';
+            
+            const baseData = currentDbResults[selectedIndexes[0]];
+            
+            const printHeader = document.createElement('div');
+            printHeader.className = 'db-print-header no-screen';
+            printHeader.innerHTML = `${baseData.model} | ITEM: ${baseData.item} | CLR: ${baseData.clr} | LOẠI: ${baseData.bar_type}`;
+            container.appendChild(printHeader);
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 animate-fade-in';
+            
+            selectedIndexes.forEach(idx => {
+                const item = currentDbResults[idx];
+                const card = document.createElement('div');
+                card.className = 'barcode-card group relative cursor-pointer hover:border-indigo-400 border border-slate-100 transition-all p-3 md:p-5 min-h-[140px] md:min-h-[160px] flex items-center justify-center flex-col bg-white overflow-hidden';
+                
+                const displaySize = getDisplaySize(item);
+                card.dataset.code = item.barcode;
+                card.dataset.size = displaySize;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'absolute top-2 md:top-3 left-2 md:left-3 w-5 md:w-6 h-5 md:h-6 cursor-pointer barcode-checkbox rounded-lg md:rounded-xl border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all z-10';
+                card.appendChild(checkbox);
+
+                const info = document.createElement('div');
+                info.className = 'w-full mb-3 md:mb-4 flex flex-col items-center gap-0.5';
+                
+                const sizeLabel = document.createElement('div');
+                sizeLabel.className = 'text-xs md:text-sm font-black text-slate-800 uppercase';
+                sizeLabel.innerText = `SIZE: ${displaySize}`;
+                info.appendChild(sizeLabel);
+                
+                const details = document.createElement('div');
+                details.className = 'text-[10px] md:text-xs font-bold text-slate-500 uppercase';
+                details.innerText = `${item.model} | ${item.item} | ${item.clr}`;
+                info.appendChild(details);
+                
+                card.appendChild(info);
+
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                try {
+                    JsBarcode(svg, item.barcode, {
+                        ...getBarcodeOptions(),
+                        format: item.bar_type === "JAN" ? "EAN13" : "UPC"
+                    });
+                    card.appendChild(svg);
+                } catch (e) {
+                    const err = document.createElement('div');
+                    err.innerHTML = `<span class="text-rose-500 font-black">Lỗi mã:</span> ${item.barcode}`;
+                    card.appendChild(err);
+                }
+                
+                const copyText = document.createElement('div');
+                copyText.className = 'mt-4 px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-mono font-bold text-slate-600 cursor-pointer hover:bg-indigo-100 hover:text-indigo-600 transition-colors';
+                copyText.innerText = item.barcode;
+                copyText.onclick = (e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(item.barcode);
+                    showNotification("Đã copy mã vạch vào Clipboard.");
+                };
+                card.appendChild(copyText);
+
+                grid.appendChild(card);
+            });
+            
+            container.appendChild(grid);
+            
+            const selActions = document.getElementById('selection-actions');
+            selActions.classList.remove('hidden');
+            selActions.classList.add('flex');
+            
+            updateSelectSelectedUI();
+            
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+
+        // --- OLD FUNCTIONS MODIFIED ---
         function toggleLegacyMode() {
             legacyModeEnabled = document.getElementById('legacy-mode-toggle').checked;
             const infoDiv = document.getElementById('legacy-mode-info');
@@ -338,18 +873,26 @@
                 infoDiv.classList.add('hidden');
             }
 
-            if (lastGenerationType) {
-                const resultArea = document.getElementById('result-area');
-                const hasContent = !resultArea.querySelector('#placeholder');
-                if (hasContent) {
+            // Regenerate results if they exist
+            const resultArea = document.getElementById('result-area');
+            const hasContent = !resultArea.querySelector('#placeholder');
+            if (hasContent) {
+                // Determine if we generated from simple or DB
+                if (document.getElementById('tab-create').classList.contains('active')) {
                     generateSimple();
-                    showNotification(legacyModeEnabled ?
-                        '✓ Chế độ Máy Cũ: Barcode đã được tối ưu độ nét' :
-                        '✓ Chế độ Chuẩn: Barcode đã quay về kích thước gốc'
-                    );
+                } else {
+                    generateDbBarcodes();
                 }
+                
+                showNotification(legacyModeEnabled ?
+                    '✓ Chế độ Máy Cũ: Barcode đã được tối ưu độ nét' :
+                    '✓ Chế độ Chuẩn: Barcode đã quay về kích thước gốc'
+                );
             }
         }
+
+        // --- GLOBAL SCAN MODE STATE ---
+        // (Move the rest of the script below)
 
         function showNotification(message, action = null) {
             const existing = document.getElementById('toast-notification');
@@ -424,11 +967,12 @@
                 return {
                     format: "CODE128",
                     lineColor: "#000",
-                    width: 2,
-                    height: 60,
+                    width: 2.2, /* Tăng độ rộng vạch để lấp đầy ngang Card */
+                    height: 55,  /* Tăng nhẹ chiều cao vạch */
                     displayValue: true,
-                    fontSize: 16,
-                    margin: 10
+                    fontSize: 14,
+                    margin: 0,   /* Loại bỏ lề mặc định của thư viện để giãn tối đa */
+                    textMargin: 2
                 };
             }
         }

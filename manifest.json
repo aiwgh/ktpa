@@ -1,7 +1,8 @@
 {
   "name": "KHO THÀNH PHẨM A | PRO SYSTEM",
   "short_name": "Kho A Pro",
-  "description": "Ứng dụng xuất mã vạch chuyên nghiệp hệ thống KHO THÀNH PHẨM A.",
+  "version": "1.0.1",
+  "description": "Ứng dụng xuất mã vạch chuyên nghiệp hệ thống KHO THÀNH PHẨM A (v1.0.1).",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
