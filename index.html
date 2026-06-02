@@ -312,6 +312,8 @@
                         <select id="db-search-type" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white text-sm font-bold">
                             <option value="UPC">UPC (Chuẩn)</option>
                             <option value="JAN">JAN (Nhật Bản)</option>
+                            <option value="AKR">AKR (Hàn Quốc)</option>
+                            <option value="ACN">ACN (Trung Quốc)</option>
                         </select>
                     </div>
                     <div class="flex items-end">
@@ -826,7 +828,7 @@
                 try {
                     JsBarcode(svg, item.barcode, {
                         ...getBarcodeOptions(),
-                        format: item.bar_type === "JAN" ? "EAN13" : "UPC"
+                        format: "CODE128"
                     });
                     card.appendChild(svg);
                 } catch (e) {
