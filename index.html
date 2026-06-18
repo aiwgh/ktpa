@@ -287,7 +287,7 @@
                     <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl md:rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
                     <img src="./logo.png" class="relative w-16 h-16 md:w-24 md:h-24 rounded-xl md:rounded-2xl border border-white/10 object-cover bg-slate-900 transform transition-all duration-500 group-hover:scale-105" alt="Logo">
                 </div>
-                <div class="text-center sm:text-left">
+                <div class="text-center sm:text-left flex-1">
                     <h1 class="text-2xl md:text-4xl font-black text-white mb-2">
                         KHO THÀNH PHẨM A
                     </h1>
@@ -297,6 +297,10 @@
                         <span class="h-px w-5 md:w-8 bg-indigo-500/50"></span>
                     </div>
                 </div>
+                <button id="app-changelog-trigger" onclick="openChangelogModal()" class="hidden no-print w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/10 px-4 py-3 rounded-2xl transition-all text-left sm:text-center">
+                    <div class="text-[10px] uppercase tracking-[0.25em] text-indigo-300 font-black">Cập nhật</div>
+                    <div id="app-changelog-trigger-label" class="text-sm font-black">Xem changelog</div>
+                </button>
             </div>
         </div>
 
@@ -622,6 +626,22 @@
         </div>
     </div>
 
+    <div id="changelog-modal" class="hidden fixed inset-0 z-[220] bg-slate-950/70 backdrop-blur-sm p-3 md:p-8 no-print">
+        <div class="w-full max-w-3xl mx-auto bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col">
+            <div class="flex items-start justify-between gap-4 px-5 md:px-8 py-5 border-b border-slate-100">
+                <div>
+                    <div class="text-[10px] font-black tracking-[0.25em] uppercase text-indigo-500">Nhật Ký Cập Nhật</div>
+                    <h3 id="changelog-modal-title" class="text-xl md:text-2xl font-black text-slate-900 mt-1">Phiên bản hiện tại</h3>
+                    <p id="changelog-modal-subtitle" class="text-xs md:text-sm font-bold text-slate-500 mt-1">Các thay đổi và lỗi đã sửa</p>
+                </div>
+                <button onclick="closeChangelogModal()" class="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-black transition-all">✕</button>
+            </div>
+            <div id="changelog-modal-content" class="flex-1 overflow-y-auto px-5 md:px-8 py-5 md:py-6 space-y-5 bg-slate-50/50">
+                <div class="p-4 bg-white rounded-2xl border border-slate-200 text-sm font-bold text-slate-500">Đang tải changelog...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- GLOBAL STATE ---
         let scanModeActive = false;
@@ -639,7 +659,13 @@
         let currentDbResults = [];
         let currentDbLookup = null;
         let tableName = "data"; // Default, will detect
-            let createQuickLookupMap = null;
+        let createQuickLookupMap = null;
+        const DB_CACHE_NAME = 'ktpa-db-cache-v1';
+        const DB_VERSION_STORAGE_KEY = 'ktpa-db-version';
+        const DB_SOURCE_PATH_STORAGE_KEY = 'ktpa-db-path';
+        const APP_VERSION_STORAGE_KEY = 'ktpa-app-version-last-seen';
+        let appManifestInfo = null;
+        let appChangelogEntries = [];
 
         // --- TAB SYSTEM ---
         function switchTab(tab) {
@@ -668,6 +694,150 @@
         }
 
         // --- DATABASE LOGIC ---
+        async function fetchProjectDbVersion() {
+            const response = await fetch('./version.json', { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error('Không thể đọc version.json để kiểm tra phiên bản DB.');
+            }
+            const data = await response.json();
+            return (data?.version || '').toString().trim();
+        }
+
+        function parseDbVersion(versionStr) {
+            const raw = (versionStr || '').toString().trim();
+            if (!/^\d{6}$/.test(raw)) return null;
+            const month = parseInt(raw.slice(0, 2), 10);
+            const year = parseInt(raw.slice(2), 10);
+            if (month < 1 || month > 12) return null;
+            return { month, year, date: new Date(year, month - 1, 1) };
+        }
+
+        function isDbVersionOlderThanTwoMonths(versionStr) {
+            const parsed = parseDbVersion(versionStr);
+            if (!parsed) return false;
+            const now = new Date();
+            const monthDiff = (now.getFullYear() - parsed.year) * 12 + (now.getMonth() - (parsed.month - 1));
+            return monthDiff >= 2;
+        }
+
+        async function getDbCache() {
+            if (!('caches' in window)) return null;
+            return caches.open(DB_CACHE_NAME);
+        }
+
+        async function getCachedDbResponse(dbCandidates) {
+            const cache = await getDbCache();
+            if (!cache) return null;
+
+            const preferredPath = localStorage.getItem(DB_SOURCE_PATH_STORAGE_KEY);
+            const orderedCandidates = preferredPath
+                ? [preferredPath, ...dbCandidates.filter(p => p !== preferredPath)]
+                : dbCandidates;
+
+            for (const path of orderedCandidates) {
+                const cached = await cache.match(path);
+                if (cached) {
+                    return { response: cached, path };
+                }
+            }
+            return null;
+        }
+
+        async function fetchAndCacheDbFromNetwork(dbCandidates) {
+            let response = null;
+            let matchedPath = null;
+
+            for (const p of dbCandidates) {
+                const r = await fetch(p, { cache: 'no-store' });
+                if (r.ok) {
+                    response = r;
+                    matchedPath = p;
+                    break;
+                }
+            }
+
+            if (!response || !matchedPath) {
+                throw new Error(`Không thể tải file database. Đảm bảo file tồn tại trong thư mục gốc (${dbCandidates.join(', ')}).`);
+            }
+
+            const cache = await getDbCache();
+            if (cache) {
+                await cache.put(matchedPath, response.clone());
+            }
+
+            localStorage.setItem(DB_SOURCE_PATH_STORAGE_KEY, matchedPath);
+            return { response, path: matchedPath };
+        }
+
+        async function loadDbFileWithVersioning() {
+            const dbCandidates = ['./db.sqlite', './barcodeinbox.sqlite'];
+            const storedVersion = localStorage.getItem(DB_VERSION_STORAGE_KEY);
+            let projectVersion = null;
+            let versionFetchFailed = false;
+
+            try {
+                projectVersion = await fetchProjectDbVersion();
+            } catch (err) {
+                versionFetchFailed = true;
+            }
+
+            if (projectVersion && storedVersion === projectVersion) {
+                const cached = await getCachedDbResponse(dbCandidates);
+                if (cached) {
+                    return {
+                        response: cached.response,
+                        source: 'cache',
+                        path: cached.path,
+                        version: projectVersion,
+                        staleWarning: isDbVersionOlderThanTwoMonths(projectVersion),
+                        versionFetchFailed: false
+                    };
+                }
+            }
+
+            if (projectVersion) {
+                try {
+                    const fresh = await fetchAndCacheDbFromNetwork(dbCandidates);
+                    localStorage.setItem(DB_VERSION_STORAGE_KEY, projectVersion);
+                    return {
+                        response: fresh.response,
+                        source: 'network',
+                        path: fresh.path,
+                        version: projectVersion,
+                        staleWarning: isDbVersionOlderThanTwoMonths(projectVersion),
+                        versionFetchFailed: false
+                    };
+                } catch (networkErr) {
+                    const cached = await getCachedDbResponse(dbCandidates);
+                    if (cached) {
+                        return {
+                            response: cached.response,
+                            source: 'cache-fallback',
+                            path: cached.path,
+                            version: storedVersion || projectVersion,
+                            staleWarning: isDbVersionOlderThanTwoMonths(storedVersion || projectVersion),
+                            versionFetchFailed: true
+                        };
+                    }
+                    throw networkErr;
+                }
+            }
+
+            const cached = await getCachedDbResponse(dbCandidates);
+            if (cached) {
+                return {
+                    response: cached.response,
+                    source: 'cache-fallback',
+                    path: cached.path,
+                    version: storedVersion || '',
+                    staleWarning: isDbVersionOlderThanTwoMonths(storedVersion || ''),
+                    versionFetchFailed
+                };
+            }
+
+            throw new Error('Không thể tải version.json và cũng không có DB trong cache để sử dụng offline.');
+        }
+
         async function initDatabase() {
             const statusDiv = document.getElementById('db-loading-status');
             const lookupBtn = document.getElementById('db-lookup-btn');
@@ -677,19 +847,14 @@
                     locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
                 };
                 SQL = await initSqlJs(config);
-                
-                const dbCandidates = ['./db.sqlite', './barcodeinbox.sqlite'];
-                let response = null;
-                for (const p of dbCandidates) {
-                    const r = await fetch(p);
-                    if (r.ok) {
-                        response = r;
-                        break;
-                    }
+
+                if (statusDiv) {
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.innerHTML = 'Đang kiểm tra phiên bản và tải Database...';
                 }
-                if (!response) {
-                    throw new Error(`Không thể tải file database. Đảm bảo file tồn tại trong thư mục gốc (${dbCandidates.join(', ')}).`);
-                }
+
+                const loadInfo = await loadDbFileWithVersioning();
+                const response = loadInfo.response;
                 
                 const arrayBuffer = await response.arrayBuffer();
                 const uInt8Array = new Uint8Array(arrayBuffer);
@@ -705,12 +870,33 @@
                 
                 dbLoaded = true;
                 if (statusDiv) {
-                    statusDiv.innerHTML = `✅ Đã kết nối Database: <b>${tableName}</b>`;
+                    const sourceText = loadInfo.source === 'network'
+                        ? 'đã tải mới'
+                        : (loadInfo.source === 'cache' ? 'đang dùng cache' : 'đang dùng cache offline');
+                    let statusHtml = `✅ Đã kết nối Database: <b>${tableName}</b> | ${sourceText}`;
+                    if (loadInfo.version) {
+                        statusHtml += ` | version: <b>${loadInfo.version}</b>`;
+                    }
+                    if (loadInfo.versionFetchFailed) {
+                        statusHtml += ` | <span class="font-black">không kiểm tra được version online</span>`;
+                    }
+                    if (loadInfo.staleWarning) {
+                        statusHtml += ` | <span class="font-black">DB có thể đã cũ, hãy liên hệ lập trình viên để cập nhật</span>`;
+                    }
+                    statusDiv.innerHTML = statusHtml;
                     statusDiv.classList.remove('bg-amber-50', 'border-amber-100', 'text-amber-700', 'animate-pulse');
-                    statusDiv.classList.add('bg-emerald-50', 'border-emerald-100', 'text-emerald-700');
-                    setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+                    if (loadInfo.staleWarning || loadInfo.versionFetchFailed) {
+                        statusDiv.classList.add('bg-amber-50', 'border-amber-100', 'text-amber-700');
+                    } else {
+                        statusDiv.classList.add('bg-emerald-50', 'border-emerald-100', 'text-emerald-700');
+                        setTimeout(() => statusDiv.classList.add('hidden'), 4000);
+                    }
                 }
                 if (lookupBtn) lookupBtn.disabled = false;
+
+                if (loadInfo.staleWarning) {
+                    showNotification('DB có thể đã cũ hơn 2 tháng. Hãy liên hệ lập trình viên để cập nhật dữ liệu mới.');
+                }
                 
             } catch (err) {
                 console.error(err);
@@ -760,6 +946,121 @@
             if (v.startsWith("ACN")) return "ACN";
             if (v.startsWith("AKR")) return "AKR";
             return v;
+        }
+
+        function escapeHtml(text) {
+            return (text || '').toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderChangelogSection(title, items, accentClass = 'text-indigo-600') {
+            if (!Array.isArray(items) || items.length === 0) return '';
+            const listHtml = items.map(item => `<li class="text-sm md:text-[15px] text-slate-700 leading-relaxed">${escapeHtml(item)}</li>`).join('');
+            return `
+                <div class="p-4 bg-white rounded-2xl border border-slate-200">
+                    <div class="text-xs font-black uppercase tracking-[0.2em] ${accentClass} mb-3">${escapeHtml(title)}</div>
+                    <ul class="space-y-2">${listHtml}</ul>
+                </div>
+            `;
+        }
+
+        function getCurrentChangelogEntry() {
+            if (!appManifestInfo?.version) return null;
+            return appChangelogEntries.find(entry => (entry?.version || '').toString().trim() === appManifestInfo.version) || null;
+        }
+
+        function renderChangelogModal() {
+            const title = document.getElementById('changelog-modal-title');
+            const subtitle = document.getElementById('changelog-modal-subtitle');
+            const content = document.getElementById('changelog-modal-content');
+            if (!title || !subtitle || !content) return;
+
+            const currentVersion = appManifestInfo?.version || 'Không rõ';
+            const entry = getCurrentChangelogEntry();
+
+            title.innerText = `Phiên bản ${currentVersion}`;
+            subtitle.innerText = entry?.date
+                ? `Cập nhật ngày ${entry.date}`
+                : 'Các thay đổi và lỗi đã sửa của phiên bản hiện tại';
+
+            if (!entry) {
+                content.innerHTML = `
+                    <div class="p-5 bg-white rounded-2xl border border-slate-200">
+                        <div class="text-sm font-black text-slate-900 mb-2">Chưa có nội dung changelog cho phiên bản ${escapeHtml(currentVersion)}</div>
+                        <div class="text-sm text-slate-600 leading-relaxed">Bạn có thể cập nhật thủ công trong file <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded">changelog.json</code>.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const summaryHtml = entry.summary
+                ? `<div class="p-5 bg-indigo-50 rounded-2xl border border-indigo-100 text-sm md:text-[15px] font-bold text-slate-700 leading-relaxed">${escapeHtml(entry.summary)}</div>`
+                : '';
+
+            const sections = [
+                renderChangelogSection('Tính năng mới', entry.features, 'text-emerald-600'),
+                renderChangelogSection('Cải tiến', entry.improvements, 'text-indigo-600'),
+                renderChangelogSection('Lỗi đã sửa', entry.fixes, 'text-rose-600'),
+                renderChangelogSection('Ghi chú', entry.notes, 'text-amber-600')
+            ].filter(Boolean).join('');
+
+            content.innerHTML = `
+                ${summaryHtml}
+                ${sections || `<div class="p-5 bg-white rounded-2xl border border-slate-200 text-sm text-slate-600">Phiên bản này chưa có chi tiết thay đổi.</div>`}
+            `;
+        }
+
+        function openChangelogModal() {
+            const modal = document.getElementById('changelog-modal');
+            if (!modal) return;
+            renderChangelogModal();
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeChangelogModal() {
+            const modal = document.getElementById('changelog-modal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        async function loadAppChangelog() {
+            try {
+                const manifestRes = await fetch('./manifest.json', { cache: 'no-store' });
+                if (!manifestRes.ok) throw new Error('Không thể đọc manifest.json.');
+                appManifestInfo = await manifestRes.json();
+
+                const trigger = document.getElementById('app-changelog-trigger');
+                const triggerLabel = document.getElementById('app-changelog-trigger-label');
+                if (trigger && triggerLabel) {
+                    trigger.classList.remove('hidden');
+                    triggerLabel.innerText = `Xem thay đổi v${appManifestInfo.version || '?'}`;
+                }
+
+                const changelogRes = await fetch('./changelog.json', { cache: 'no-store' });
+                if (changelogRes.ok) {
+                    const changelogData = await changelogRes.json();
+                    appChangelogEntries = Array.isArray(changelogData?.entries) ? changelogData.entries : [];
+                } else {
+                    appChangelogEntries = [];
+                }
+
+                const savedVersion = localStorage.getItem(APP_VERSION_STORAGE_KEY);
+                if (appManifestInfo?.version && savedVersion !== appManifestInfo.version) {
+                    localStorage.setItem(APP_VERSION_STORAGE_KEY, appManifestInfo.version);
+                    showNotification(`Đã cập nhật ứng dụng lên phiên bản ${appManifestInfo.version}.`, {
+                        label: 'Xem thay đổi',
+                        callback: openChangelogModal
+                    });
+                }
+            } catch (err) {
+                console.error('Không thể tải changelog ứng dụng:', err);
+            }
         }
 
         function renderCreateQuickResults(sizeList) {
@@ -1746,6 +2047,20 @@
                 e.returnValue = '';
             }
         });
+
+        document.getElementById('changelog-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'changelog-modal') {
+                closeChangelogModal();
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeChangelogModal();
+            }
+        });
+
+        loadAppChangelog();
     </script>
 </body>
 

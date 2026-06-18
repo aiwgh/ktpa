@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "version": "1.0.3",
+      "date": "2026-06-18",
+      "summary": "Bản cập nhật tập trung vào tối ưu tra cứu mã vạch từ Database, cải thiện cache DB và nâng cao trải nghiệm sử dụng trên desktop lẫn điện thoại.",
+      "features": [
+        "Bổ sung tra cứu nhanh mã barcode ngay trong tab Tạo Barcode để chèn mã trực tiếp vào ô nhập liệu.",
+        "Bổ sung cơ chế cache Database theo version.json để giảm tải mạng và hỗ trợ sử dụng tốt hơn khi mạng yếu."
+      ],
+      "improvements": [
+        "Cải thiện luồng tải Database để ưu tiên dùng cache khi version không thay đổi.",
+        "Bổ sung giao diện xem changelog theo version hiện tại của ứng dụng."
+      ],
+      "fixes": [
+        "Sửa một số trường hợp không đọc đúng loại tem ACN trong dữ liệu Database.",
+        "Tối ưu lại một số bố cục in và xử lý hiển thị liên quan đến tra cứu Database."
+      ],
+      "notes": [
+        "Nếu có bất kỳ lỗi hay có ý tưởng gì hay ho xin hãy liên hệ Dev của ứng dụng để yêu cầu hoặc sửa lỗi nhanh chóng nhất!"
+      ]
+      ,
+      "breakingchanges":[
+        "test"
+      ],
+      "knownissues":[
+        "test"
+      ]
+    }
+  ]
+}
