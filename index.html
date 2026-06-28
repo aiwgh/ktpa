@@ -244,7 +244,7 @@
                 page-break-after: avoid !important;
             }
             .db-type-item {
-                margin-bottom: 5px !important;
+                margin-bottom:15px !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -310,7 +310,7 @@
                 Tạo Barcode
             </button>
             <button onclick="switchTab('lookup')" id="tab-lookup" class="tab-btn px-4 md:px-8 py-4 md:py-5 text-sm md:text-base font-bold text-slate-400 hover:text-slate-600">
-                Tra cứu Database
+                Tra cứu & In ấn
             </button>
         </div>
 
@@ -437,7 +437,7 @@
                                     JAN
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
-                                    <input type="checkbox" class="db-type-checkbox w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="AKR" onchange="syncDbSelectAllTypes()">
+                                    <input type="checkbox" class="db-type-checkbox w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="AKR" checked onchange="syncDbSelectAllTypes()">
                                     AKR
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
@@ -1427,7 +1427,6 @@
             container.innerHTML = '';
             
             const baseData = currentDbLookup;
-            
             const printHeader = document.createElement('div');
             printHeader.className = 'db-print-header no-screen';
             const headerParts = [];
@@ -1444,7 +1443,9 @@
                 return v.toUpperCase();
             };
 
-            const typeCols = selectedTypes.map(normalizeType);
+            const availableTypes = [...baseData.typeSizeMap.keys()].map(normalizeType);
+
+            const typeCols = selectedTypes.filter(type => availableTypes.includes(type));
             const printGrid = document.createElement('div');
             printGrid.className = 'db-type-columns animate-fade-in';
             printGrid.style.setProperty('--db-cols', String(Math.min(3, typeCols.length)));
