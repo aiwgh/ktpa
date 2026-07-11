@@ -694,8 +694,10 @@
         }
 
         // --- DATABASE LOGIC ---
+        const R2_PUBLIC_BUCKET_URL = 'https://pub-317e90bf3d2048eca4c4f97ca6e997e0.r2.dev';
+
         async function fetchProjectDbVersion() {
-            const response = await fetch('./version.json', { cache: 'no-store' });
+            const response = await fetch(`${R2_PUBLIC_BUCKET_URL}/version.json`, { cache: 'no-store' });
             if (!response.ok) {
                 throw new Error('Không thể đọc version.json để kiểm tra phiên bản DB.');
             }
@@ -770,7 +772,12 @@
         }
 
         async function loadDbFileWithVersioning() {
-            const dbCandidates = ['./db.sqlite', './barcodeinbox.sqlite'];
+            const dbCandidates = [
+                `${R2_PUBLIC_BUCKET_URL}/db.sqlite`,
+                `${R2_PUBLIC_BUCKET_URL}/barcodeinbox.sqlite`,
+                './db.sqlite',
+                './barcodeinbox.sqlite'
+            ];
             const storedVersion = localStorage.getItem(DB_VERSION_STORAGE_KEY);
             let projectVersion = null;
             let versionFetchFailed = false;
@@ -1443,9 +1450,18 @@
                 return v.toUpperCase();
             };
 
-            const availableTypes = [...baseData.typeSizeMap.keys()].map(normalizeType);
-
-            const typeCols = selectedTypes.filter(type => availableTypes.includes(type));
+            // Chỉ giữ lại loại tem có ít nhất 1 size khớp trong dữ liệu DB
+            const typeCols = [];
+            selectedTypes.forEach(type => {
+                const normalizedType = normalizeType(type);
+                const sizeMap = currentDbLookup.typeSizeMap.get(normalizedType);
+                if (!sizeMap) return;
+                // Kiểm tra xem loại tem này có size nào trong selectedSizes không
+                const hasMatchingSize = selectedSizes.some(sz => sizeMap.has(sz));
+                if (hasMatchingSize) {
+                    typeCols.push(normalizedType);
+                }
+            });
             const printGrid = document.createElement('div');
             printGrid.className = 'db-type-columns animate-fade-in';
             printGrid.style.setProperty('--db-cols', String(Math.min(3, typeCols.length)));
