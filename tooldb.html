@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to SQLite Converter - Pro</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-hover: #2980b9;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            max-width: 850px;
+            width: 100%;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text);
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        /* Drag & Drop Zone */
+        .upload-area {
+            border: 2px dashed var(--primary);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            background: #f0f8ff;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: block;
+            position: relative;
+        }
+
+        .upload-area.dragover {
+            background: #d4e9fa;
+            border-color: #1d6fa5;
+            transform: scale(1.01);
+        }
+
+        .upload-area p {
+            margin: 0.5rem 0 0 0;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Sheet Selection Chips/Checkboxes */
+        .sheets-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        .sheet-checkbox {
+            display: none;
+        }
+
+        .sheet-label {
+            padding: 6px 14px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            background: #fff;
+            font-size: 0.88rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .sheet-checkbox:checked + .sheet-label {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: 500;
+        }
+
+        .sheet-actions {
+            font-size: 0.8rem;
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Preview Table */
+        .preview-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .preview-select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 0.85rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 220px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            border-right: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f1f3f5;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            color: #333;
+            z-index: 1;
+        }
+
+        /* Button & Progress */
+        .btn {
+            display: block;
+            background: var(--primary);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+            font-size: 1rem;
+            width: 100%;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        .status-box {
+            margin-top: 1.25rem;
+            padding: 1rem;
+            border-radius: 6px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2ecc71;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📊 Chuyển Đổi Excel ➡️ SQLite</h2>
+    <p class="subtitle">
+        Trang web tĩnh xử lý hoàn toàn trên thiết bị client. Tối ưu thuật toán đa luồng cho tập dữ liệu cực lớn (>100.000 dòng).
+    </p>
+
+    <!-- Upload Area -->
+    <div class="upload-area" id="dropZone">
+        <div class="upload-icon">📁</div>
+        <strong id="fileNameDisplay">Kéo & Drop file Excel vào đây hoặc nhấp để chọn</strong>
+        <p>Hỗ trợ tệp .xlsx, .xls</p>
+        <input type="file" id="fileInput" accept=".xls,.xlsx" />
+    </div>
+
+    <!-- Sheet Selection Section -->
+    <div class="section-card" id="sheetSection">
+        <div class="section-title">
+            <span>1. Chọn các Sheet cần gộp dữ liệu:</span>
+            <span class="sheet-actions" id="toggleAllSheets">Bỏ chọn tất cả</span>
+        </div>
+        <div class="sheets-grid" id="sheetsGrid"></div>
+    </div>
+
+    <!-- Data Preview Section -->
+    <div class="section-card" id="previewSection">
+        <div class="section-title">
+            <span>2. Xem trước mẫu dữ liệu (5 dòng đầu):</span>
+            <div class="preview-controls">
+                <label for="previewSheetSelect" style="font-size:0.85rem">Sheet:</label>
+                <select id="previewSheetSelect" class="preview-select"></select>
+            </div>
+        </div>
+        <div class="table-container" id="tableContainer">
+            <table id="previewTable"></table>
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <button id="processBtn" class="btn" disabled>Bắt đầu xử lý & Xuất SQLite DB</button>
+
+    <!-- Progress & Log Output -->
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="status-box" id="statusBox"></div>
+</div>
+
+<script>
+    // Elements DOM
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const sheetSection = document.getElementById('sheetSection');
+    const sheetsGrid = document.getElementById('sheetsGrid');
+    const toggleAllSheets = document.getElementById('toggleAllSheets');
+    const previewSection = document.getElementById('previewSection');
+    const previewSheetSelect = document.getElementById('previewSheetSelect');
+    const previewTable = document.getElementById('previewTable');
+    const processBtn = document.getElementById('processBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const statusBox = document.getElementById('statusBox');
+
+    let selectedFile = null;
+    let parsedSheetPreviews = {};
+    let allSheetNames = [];
+    let isAllSelected = true;
+
+    // ==============================================================================
+    // DRAG & DROP HANDLERS
+    // ==============================================================================
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+        }, false);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        if (!file.name.match(/\.(xlsx|xls)$/i)) {
+            alert("Vui lòng chọn tệp Excel (.xlsx hoặc .xls)!");
+            return;
+        }
+        selectedFile = file;
+        fileNameDisplay.textContent = `📄 ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+
+        // Reset UI
+        sheetSection.style.display = 'none';
+        previewSection.style.display = 'none';
+        processBtn.disabled = true;
+        statusBox.style.display = 'block';
+        statusBox.textContent = 'Đang quét cấu trúc file Excel...';
+
+        // Read file arrayBuffer and send to worker for initial scan
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const buffer = e.target.result;
+            worker.postMessage({ action: 'SCAN', fileBuffer: buffer }, [buffer]);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // ==============================================================================
+    // WEB WORKER LOGIC
+    // ==============================================================================
+    const workerCode = `
+        importScripts(
+            'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js'
+        );
+
+        let currentWorkbook = null;
+
+        self.onmessage = async function(e) {
+            const { action } = e.data;
+
+            // -------------------------------------------------------------
+            // ACTION 1: SCAN WORKBOOK (Lấy thông tin sheet & preview 5 dòng)
+            // -------------------------------------------------------------
+            if (action === 'SCAN') {
+                try {
+                    const arrayBuffer = e.data.fileBuffer;
+                    currentWorkbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+                    const sheetNames = currentWorkbook.SheetNames;
+                    const previews = {};
+
+                    for (let name of sheetNames) {
+                        const worksheet = currentWorkbook.Sheets[name];
+                        // Lấy 5 dòng đầu tiên để xem trước
+                        const jsonSample = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: '' });
+                        previews[name] = jsonSample.slice(0, 6); // Lấy header + 5 dòng
+                    }
+
+                    postMessage({
+                        type: 'SCAN_COMPLETE',
+                        sheetNames: sheetNames,
+                        previews: previews
+                    });
+                } catch (err) {
+                    postMessage({ type: 'ERROR', error: 'Lỗi khi đọc file Excel: ' + err.message });
+                }
+            }
+
+            // -------------------------------------------------------------
+            // ACTION 2: PROCESS & EXPORT TO SQLITE
+            // -------------------------------------------------------------
+            if (action === 'PROCESS') {
+                try {
+                    const { targetSheets } = e.data;
+                    if (!currentWorkbook) {
+                        throw new Error('Không tìm thấy dữ liệu workbook trong bộ nhớ tạm.');
+                    }
+
+                    let allData = [];
+                    let headers = [];
+
+                    for (let sheetName of targetSheets) {
+                        if (currentWorkbook.Sheets[sheetName]) {
+                            postMessage({ type: 'STATUS', status: 'Đang trích xuất dữ liệu từ Sheet: ' + sheetName });
+
+                            // raw: false giữ nguyên định dạng chuỗi của số 0 đầu (ví dụ 001)
+                            const sheetData = XLSX.utils.sheet_to_json(currentWorkbook.Sheets[sheetName], { raw: false, defval: null });
+
+                            if (sheetData.length > 0 && headers.length === 0) {
+                                headers = Object.keys(sheetData[0]);
+                            }
+
+                            for (let i = 0; i < sheetData.length; i++) {
+                                allData.push(sheetData[i]);
+                            }
+
+                            // Giải phóng RAM bằng cách xóa sheet đã đọc xong
+                            delete currentWorkbook.Sheets[sheetName];
+                        }
+                    }
+
+                    postMessage({ type: 'STATUS', status: 'Đang tiến hành lọc trùng lặp cho ' + allData.length + ' bản ghi...' });
+
+                    // Thuật toán lọc trùng O(n) tiết kiệm RAM
+                    const uniqueSet = new Set();
+                    const cleanData = [];
+
+                    for (let i = 0; i < allData.length; i++) {
+                        const row = allData[i];
+                        let rowKey = "";
+                        for (let j = 0; j < headers.length; j++) {
+                            rowKey += (row[headers[j]] !== null && row[headers[j]] !== undefined ? row[headers[j]] : "") + "|~|";
+                        }
+
+                        if (!uniqueSet.has(rowKey)) {
+                            uniqueSet.add(rowKey);
+                            cleanData.push(row);
+                        }
+                    }
+
+                    allData = null; // Đánh dấu dọn rác
+                    uniqueSet.clear();
+
+                    postMessage({ type: 'STATUS', status: 'Khởi tạo WebAssembly SQLite Engine...' });
+
+                    const SQL = await initSqlJs({ locateFile: file => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.wasm' });
+                    const db = new SQL.Database();
+
+                    // Tạo bảng với tất cả các cột kiểu TEXT để đảm bảo an toàn định dạng
+                    const columnsDef = headers.map(h => '"' + h.replace(/"/g, '""') + '" TEXT').join(', ');
+                    db.run('CREATE TABLE data (' + columnsDef + ');');
+
+                    postMessage({ type: 'STATUS', status: 'Đang ghi ' + cleanData.length + ' dòng dữ liệu vào SQLite...' });
+
+                    db.run("BEGIN TRANSACTION;");
+
+                    const placeholders = headers.map(() => '?').join(', ');
+                    const stmt = db.prepare('INSERT INTO data VALUES (' + placeholders + ')');
+
+                    for (let i = 0; i < cleanData.length; i++) {
+                        const row = cleanData[i];
+                        const values = headers.map(h => row[h] !== null && row[h] !== undefined ? String(row[h]) : null);
+
+                        stmt.run(values);
+
+                        if (i > 0 && i % 10000 === 0) {
+                            postMessage({
+                                type: 'STATUS',
+                                status: 'Tiến độ: Đang nạp dòng ' + i.toLocaleString('vi-VN') + ' / ' + cleanData.length.toLocaleString('vi-VN') + '...',
+                                progress: (i / cleanData.length) * 100
+                            });
+                        }
+                    }
+
+                    stmt.free();
+                    db.run("COMMIT;");
+
+                    postMessage({ type: 'STATUS', status: 'Đang đóng gói tệp .sqlite...', progress: 100 });
+                    const dbExport = db.export();
+                    db.close();
+                    currentWorkbook = null; // Giải phóng bộ nhớ workbook
+
+                    postMessage({ type: 'DONE', buffer: dbExport, total: cleanData.length });
+
+                } catch (err) {
+                    postMessage({ type: 'ERROR', error: err.message });
+                }
+            }
+        };
+    `;
+
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const workerUrl = URL.createObjectURL(blob);
+    const worker = new Worker(workerUrl);
+
+    // Message handler từ Worker
+    worker.onmessage = function(e) {
+        const data = e.data;
+
+        if (data.type === 'ERROR') {
+            statusBox.textContent = '❌ ' + data.error;
+            statusBox.style.color = '#e74c3c';
+            processBtn.disabled = false;
+            processBtn.textContent = 'Xử lý & Xuất SQLite DB';
+            return;
+        }
+
+        if (data.type === 'SCAN_COMPLETE') {
+            allSheetNames = data.sheetNames;
+            parsedSheetPreviews = data.previews;
+
+            renderSheetSelection(allSheetNames);
+            renderPreviewDropdown(allSheetNames);
+
+            if (allSheetNames.length > 0) {
+                renderPreviewTable(allSheetNames[0]);
+            }
+
+            statusBox.style.display = 'none';
+            sheetSection.style.display = 'block';
+            previewSection.style.display = 'block';
+            processBtn.disabled = false;
+        }
+
+        if (data.type === 'STATUS') {
+            statusBox.textContent = data.status;
+            statusBox.style.color = '#ecf0f1';
+            if (data.progress) {
+                progressFill.style.width = data.progress + '%';
+            }
+        }
+
+        if (data.type === 'DONE') {
+            statusBox.textContent = `✅ Thành công! Đã xử lý và làm sạch ${data.total.toLocaleString('vi-VN')} dòng dữ liệu.\nFile db.sqlite đang được tự động tải về...`;
+            statusBox.style.color = '#2ecc71';
+
+            const dbBlob = new Blob([data.buffer], { type: 'application/x-sqlite3' });
+            const downloadUrl = URL.createObjectURL(dbBlob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'db.sqlite';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+
+            processBtn.disabled = false;
+            processBtn.textContent = 'Bắt đầu xử lý & Xuất SQLite DB';
+        }
+    };
+
+    // ==============================================================================
+    // UI RENDERERS
+    // ==============================================================================
+    function renderSheetSelection(sheetNames) {
+        sheetsGrid.innerHTML = '';
+        sheetNames.forEach((name, idx) => {
+            const checkboxId = `sheet_chk_${idx}`;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'sheet-checkbox';
+            checkbox.id = checkboxId;
+            checkbox.value = name;
+            checkbox.checked = true;
+
+            const label = document.createElement('label');
+            label.className = 'sheet-label';
+            label.htmlFor = checkboxId;
+            label.textContent = name;
+
+            checkbox.addEventListener('change', updateProcessButtonState);
+
+            sheetsGrid.appendChild(checkbox);
+            sheetsGrid.appendChild(label);
+        });
+        isAllSelected = true;
+        toggleAllSheets.textContent = 'Bỏ chọn tất cả';
+    }
+
+    toggleAllSheets.addEventListener('click', () => {
+        const checkboxes = sheetsGrid.querySelectorAll('.sheet-checkbox');
+        isAllSelected = !isAllSelected;
+        checkboxes.forEach(chk => chk.checked = isAllSelected);
+        toggleAllSheets.textContent = isAllSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
+        updateProcessButtonState();
+    });
+
+    function updateProcessButtonState() {
+        const selected = getSelectedSheets();
+        processBtn.disabled = selected.length === 0;
+    }
+
+    function getSelectedSheets() {
+        const checkboxes = sheetsGrid.querySelectorAll('.sheet-checkbox:checked');
+        return Array.from(checkboxes).map(c => c.value);
+    }
+
+    function renderPreviewDropdown(sheetNames) {
+        previewSheetSelect.innerHTML = '';
+        sheetNames.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            previewSheetSelect.appendChild(opt);
+        });
+    }
+
+    previewSheetSelect.addEventListener('change', (e) => {
+        renderPreviewTable(e.target.value);
+    });
+
+    function renderPreviewTable(sheetName) {
+        previewTable.innerHTML = '';
+        const rows = parsedSheetPreviews[sheetName];
+        if (!rows || rows.length === 0) {
+            previewTable.innerHTML = '<tr><td style="padding:10px;">Sheet này trống dữ liệu.</td></tr>';
+            return;
+        }
+
+        // Dòng đầu tiên làm Header
+        const headerRow = rows[0];
+        const thead = document.createElement('thead');
+        const headerTr = document.createElement('tr');
+        
+        headerRow.forEach(cell => {
+            const th = document.createElement('th');
+            th.textContent = cell !== undefined && cell !== null ? cell : '';
+            headerTr.appendChild(th);
+        });
+        thead.appendChild(headerTr);
+        previewTable.appendChild(thead);
+
+        // Các dòng dữ liệu sample
+        const tbody = document.createElement('tbody');
+        for (let i = 1; i < rows.length; i++) {
+            const tr = document.createElement('tr');
+            rows[i].forEach(cell => {
+                const td = document.createElement('td');
+                td.textContent = cell !== undefined && cell !== null ? cell : '';
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        }
+        previewTable.appendChild(tbody);
+    }
+
+    // ==============================================================================
+    // PROCESS EXECUTION
+    // ==============================================================================
+    processBtn.addEventListener('click', () => {
+        const selectedSheets = getSelectedSheets();
+        if (selectedSheets.length === 0) {
+            alert('Vui lòng chọn ít nhất 1 Sheet để xử lý!');
+            return;
+        }
+
+        statusBox.style.display = 'block';
+        statusBox.textContent = 'Bắt đầu gửi yêu cầu xử lý đến Web Worker...';
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+        processBtn.disabled = true;
+        processBtn.textContent = 'Đang trong quá trình xử lý...';
+
+        worker.postMessage({
+            action: 'PROCESS',
+            targetSheets: selectedSheets
+        });
+    });
+</script>
+</body>
+</html>
