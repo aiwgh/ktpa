@@ -234,6 +234,75 @@
             width: 0%;
             transition: width 0.3s;
         }
+
+        /* R2 publishing */
+        .publish-panel {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid #b9e3d0;
+            border-radius: 10px;
+            background: #f2fbf6;
+        }
+
+        .publish-panel h3 {
+            margin: 0 0 0.5rem;
+            color: #147a4b;
+            font-size: 1rem;
+        }
+
+        .publish-panel p {
+            margin: 0 0 1rem;
+            color: #4d6658;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+
+        .publish-fields {
+            display: grid;
+            grid-template-columns: 180px minmax(0, 1fr);
+            gap: 10px 12px;
+            align-items: center;
+        }
+
+        .publish-fields label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #315342;
+        }
+
+        .publish-fields input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 10px;
+            border: 1px solid #b9d6c5;
+            border-radius: 6px;
+            font: inherit;
+            background: #fff;
+        }
+
+        .publish-fields input:focus {
+            outline: 2px solid rgba(46, 204, 113, 0.25);
+            border-color: #2eaf70;
+        }
+
+        .publish-btn {
+            margin-top: 1rem;
+            background: #159b65;
+        }
+
+        .publish-btn:hover { background: #117d52; }
+        .publish-btn:disabled { background: #aebdb4; }
+
+        .publish-status {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 560px) {
+            .publish-fields { grid-template-columns: 1fr; gap: 5px; }
+            .publish-fields label:not(:first-child) { margin-top: 7px; }
+        }
     </style>
 </head>
 <body>
@@ -278,6 +347,26 @@
     <!-- Action Button -->
     <button id="processBtn" class="btn" disabled>Bắt đầu xử lý & Xuất SQLite DB</button>
 
+    <!-- Secure R2 Publishing -->
+    <section class="publish-panel">
+        <h3>☁️ Upload bản DB lên R2</h3>
+        <p>
+            Chỉ bật nút này sau khi đã tạo DB. Worker miễn phí sẽ nhận file và cập nhật cùng lúc
+            <strong>db.sqlite</strong> và <strong>version.json</strong>. Token không được lưu vào trình duyệt hay mã nguồn public.
+            Không dùng Workers Paid; để giữ chi phí bằng 0 cần duy trì trong quota miễn phí của Cloudflare.
+        </p>
+        <div class="publish-fields">
+            <label for="databaseVersion">Version DB (MMYYYY)</label>
+            <input id="databaseVersion" type="text" inputmode="numeric" maxlength="6" autocomplete="off">
+            <label for="uploadToken">Mã upload riêng</label>
+            <input id="uploadToken" type="password" autocomplete="new-password" placeholder="Nhập token được cấp riêng">
+        </div>
+        <button id="uploadBtn" class="btn publish-btn" type="button" disabled>
+            Upload db.sqlite + version.json lên R2
+        </button>
+        <div class="publish-status" id="publishStatus" aria-live="polite"></div>
+    </section>
+
     <!-- Progress & Log Output -->
     <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
     <div class="status-box" id="statusBox"></div>
@@ -298,11 +387,21 @@
     const progressBar = document.getElementById('progressBar');
     const progressFill = document.getElementById('progressFill');
     const statusBox = document.getElementById('statusBox');
+    const databaseVersionInput = document.getElementById('databaseVersion');
+    const uploadTokenInput = document.getElementById('uploadToken');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const publishStatus = document.getElementById('publishStatus');
+
+    const R2_UPLOAD_ENDPOINT = 'https://ktpa-db-uploader.mail-xaitam-aiw.workers.dev/upload';
 
     let selectedFile = null;
     let parsedSheetPreviews = {};
     let allSheetNames = [];
     let isAllSelected = true;
+    let generatedDbFile = null;
+
+    const currentDate = new Date();
+    databaseVersionInput.value = String(currentDate.getMonth() + 1).padStart(2, '0') + currentDate.getFullYear();
 
     // ==============================================================================
     // DRAG & DROP HANDLERS
@@ -550,11 +649,12 @@
         }
 
         if (data.type === 'DONE') {
-            statusBox.textContent = `✅ Thành công! Đã xử lý và làm sạch ${data.total.toLocaleString('vi-VN')} dòng dữ liệu.\nFile db.sqlite đang được tự động tải về...`;
+            generatedDbFile = new File([data.buffer], 'db.sqlite', { type: 'application/x-sqlite3' });
+            uploadBtn.disabled = false;
+            statusBox.textContent = `✅ Thành công! Đã xử lý và làm sạch ${data.total.toLocaleString('vi-VN')} dòng dữ liệu.\nFile db.sqlite đang được tự động tải về và đã sẵn sàng để upload lên R2.`;
             statusBox.style.color = '#2ecc71';
 
-            const dbBlob = new Blob([data.buffer], { type: 'application/x-sqlite3' });
-            const downloadUrl = URL.createObjectURL(dbBlob);
+            const downloadUrl = URL.createObjectURL(generatedDbFile);
             const a = document.createElement('a');
             a.href = downloadUrl;
             a.download = 'db.sqlite';
@@ -680,11 +780,74 @@
         progressFill.style.width = '0%';
         processBtn.disabled = true;
         processBtn.textContent = 'Đang trong quá trình xử lý...';
+        generatedDbFile = null;
+        uploadBtn.disabled = true;
+        publishStatus.textContent = '';
 
         worker.postMessage({
             action: 'PROCESS',
             targetSheets: selectedSheets
         });
+    });
+
+    // ===============================================================================
+    // SECURE R2 PUBLISHING
+    // ===============================================================================
+    uploadBtn.addEventListener('click', async () => {
+        if (!generatedDbFile) {
+            publishStatus.textContent = '⚠️ Hãy tạo db.sqlite trước khi upload.';
+            publishStatus.style.color = '#b26a00';
+            return;
+        }
+
+        const version = databaseVersionInput.value.trim();
+        const token = uploadTokenInput.value.trim();
+
+        const versionMonth = Number(version.slice(0, 2));
+        const versionYear = Number(version.slice(2));
+        if (!/^\d{6}$/.test(version) || versionMonth < 1 || versionMonth > 12 || versionYear < 2000 || versionYear > 2100) {
+            publishStatus.textContent = '⚠️ Version phải có dạng MMYYYY, ví dụ 092026.';
+            publishStatus.style.color = '#b26a00';
+            databaseVersionInput.focus();
+            return;
+        }
+
+        if (!token) {
+            publishStatus.textContent = '⚠️ Vui lòng nhập mã upload riêng.';
+            publishStatus.style.color = '#b26a00';
+            uploadTokenInput.focus();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('db', generatedDbFile, 'db.sqlite');
+        formData.append('version', version);
+
+        uploadBtn.disabled = true;
+        publishStatus.textContent = '⏳ Đang upload db.sqlite và version.json lên R2...';
+        publishStatus.style.color = '#315342';
+
+        try {
+            const response = await fetch(R2_UPLOAD_ENDPOINT, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(result.error || `Upload thất bại (HTTP ${response.status}).`);
+            }
+
+            publishStatus.textContent = `✅ ${result.message || 'Upload thành công.'}\nVersion: ${result.version || version}`;
+            publishStatus.style.color = '#147a4b';
+            uploadTokenInput.value = '';
+        } catch (error) {
+            publishStatus.textContent = `❌ ${error.message || 'Không thể upload lên R2.'}`;
+            publishStatus.style.color = '#c0392b';
+        } finally {
+            uploadBtn.disabled = false;
+        }
     });
 </script>
 </body>
