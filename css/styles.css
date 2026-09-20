@@ -1,0 +1,271 @@
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Tùy chỉnh cho Barcode Card */
+        .barcode-card {
+            background: white;
+            padding: 1rem;
+            border: 1px solid #f1f5f9;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            break-inside: avoid;
+            page-break-inside: avoid;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (min-width: 768px) {
+            .barcode-card {
+                padding: 1.25rem;
+                border-radius: 1.25rem;
+            }
+        }
+
+        .barcode-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(79, 70, 229, 0.15);
+            border-color: #e2e8f0;
+        }
+
+        /* Đảm bảo SVG co giãn tốt nhưng không bị bóp méo quá mức */
+        svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            min-width: 150px;
+        }
+
+        /* Input Styles cho Mobile: Chữ to, padding rộng để dễ bấm */
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            font-size: 16px !important;
+        }
+
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+            animation: blob 7s infinite alternate;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        /* Tab Styles */
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: #4f46e5;
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #4f46e5;
+            border-radius: 99px;
+        }
+
+        /* Database Lookup Styles */
+        .db-search-input {
+            transition: all 0.3s;
+        }
+        .db-search-input:focus {
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Chế độ in ấn */
+        .db-type-columns {
+            display: grid;
+            grid-template-columns: repeat(var(--db-cols, 3), minmax(0, 1fr));
+            gap: var(--db-col-gap, 6px);
+        }
+
+        .db-type-item {
+            margin-bottom: var(--db-item-gap, 1.5mm);
+            min-height: var(--db-item-height, 14mm);
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .db-type-col {
+            min-width: 0;
+        }
+
+        .db-type-size {
+            overflow-wrap: anywhere;
+        }
+
+        @media screen {
+            /* Màn hình xem trước in: tạo một tờ giấy riêng, không để ảnh nền xuyên qua barcode. */
+            #result-area.db-print-preview {
+                background: rgba(255, 255, 255, 0.96);
+                border: 1px solid rgba(226, 232, 240, 0.95);
+                border-radius: 1.5rem;
+                box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+                padding: clamp(1rem, 3vw, 2rem);
+            }
+
+            .db-print-preview .db-type-columns {
+                align-items: start;
+                gap: clamp(0.75rem, 2vw, 1.25rem);
+            }
+
+            .db-print-preview .db-type-col {
+                background: rgba(248, 250, 252, 0.9);
+                border: 1px solid #e2e8f0;
+                border-radius: 1rem;
+                padding: 0.7rem;
+            }
+
+            .db-print-preview .db-type-col-title {
+                color: #334155;
+                font-size: 0.7rem;
+                font-weight: 900;
+                letter-spacing: 0.12em;
+                text-align: center;
+                text-transform: uppercase;
+                border-bottom: 1px solid #cbd5e1;
+                padding-bottom: 0.45rem;
+                margin-bottom: 0.55rem;
+            }
+
+            .db-print-preview .db-type-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.15rem;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.7rem;
+                padding: 0.35rem 0.45rem;
+                min-height: 0;
+            }
+
+            .db-print-preview .db-type-item svg {
+                width: 100%;
+                min-width: 0;
+                height: auto;
+                max-height: 2.25rem;
+            }
+        }
+
+.db-print-header { display: none; }
+         
+         @media screen {
+             .no-screen { display: none !important; }
+         }
+
+        /* Theme tokens: chỉ áp dụng cho giao diện màn hình, không thay đổi vùng in */
+        :root {
+            --theme-primary: #4f46e5;
+            --theme-accent: #7c3aed;
+            --theme-page: #f8fafc;
+            --theme-surface: #ffffff;
+            --theme-hero: #0f172a;
+            --theme-text: #0f172a;
+            --theme-background-image: none;
+            --theme-radius: 20px;
+            --theme-density-scale: 1;
+        }
+
+        @media screen {
+        body.theme-enabled {
+            background-color: var(--theme-page) !important;
+            color: var(--theme-text) !important;
+            background-image: var(--theme-background-image, none) !important;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        body.theme-enabled #app-shell {
+            background-color: var(--theme-surface) !important;
+            background-color: color-mix(in srgb, var(--theme-surface) 92%, transparent) !important;
+            border-color: color-mix(in srgb, var(--theme-primary) 12%, #e2e8f0) !important;
+            border-radius: var(--theme-radius) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        body.theme-enabled .app-hero {
+            background-color: var(--theme-hero) !important;
+        }
+
+        body.theme-enabled .bg-indigo-600,
+        body.theme-enabled .bg-indigo-500 {
+            background-color: var(--theme-primary) !important;
+        }
+
+        body.theme-enabled .bg-violet-600,
+        body.theme-enabled .bg-violet-500 {
+            background-color: var(--theme-accent) !important;
+        }
+
+        body.theme-enabled .text-violet-600,
+        body.theme-enabled .text-violet-500 {
+            color: var(--theme-accent) !important;
+        }
+
+        body.theme-enabled .text-indigo-600,
+        body.theme-enabled .text-indigo-500,
+        body.theme-enabled .text-indigo-700 {
+            color: var(--theme-primary) !important;
+        }
+
+        body.theme-enabled .border-indigo-100,
+        body.theme-enabled .border-indigo-200,
+        body.theme-enabled .border-indigo-300 {
+            border-color: color-mix(in srgb, var(--theme-primary) 22%, #e2e8f0) !important;
+        }
+
+        body.theme-enabled .accent-indigo-600 {
+            accent-color: var(--theme-primary) !important;
+        }
+
+        body.theme-enabled[data-theme-density="compact"] #app-shell {
+            font-size: 0.94rem !important;
+        }
+
+        body.theme-enabled[data-theme-density="compact"] #app-shell .barcode-card {
+            padding: 0.75rem !important;
+        }
+
+            body.theme-enabled .barcode-card,
+            body.theme-enabled #result-area .db-type-item {
+                border-radius: calc(var(--theme-radius) * 0.75) !important;
+                background-color: color-mix(in srgb, var(--theme-surface) 96%, transparent) !important;
+                backdrop-filter: blur(5px);
+            }
+        }
+     

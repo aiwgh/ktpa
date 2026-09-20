@@ -1,0 +1,167 @@
+/* Quy tắc in barcode hàng loạt - tách biệt với giao diện màn hình */
+@media print {
+            @page {
+                size: A4 portrait;
+                margin: 6mm;
+            }
+            .no-print {
+                display: none !important;
+            }
+            body { 
+                background-color: white !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+            }
+            .print-area { 
+                width: 100% !important; 
+                display: block !important; 
+                max-width: none !important;
+                margin: 0 !important;
+                padding-bottom: 0 !important;
+                background: #fff !important;
+                border: 0 !important;
+                box-shadow: none !important;
+            }
+
+            #result-area.db-print-preview {
+                padding: 0 !important;
+                border-radius: 0 !important;
+                background: #fff !important;
+                box-shadow: none !important;
+            }
+
+            .db-print-preview .db-type-col {
+                background: transparent !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* DB Lookup Print - 3 cols A4 */
+            .db-print-header {
+                display: block !important;
+                font-size: 14px !important;
+                font-weight: 800 !important;
+                text-align: center !important;
+                margin-bottom: 6px !important;
+                text-transform: uppercase !important;
+                border-bottom: 1px solid #000 !important;
+                padding-bottom: 3px !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            /* Lưới barcode thường của tab tạo nhanh - giữ nguyên bố cục hiện tại */
+            .grid {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px 6px !important;
+            }
+            
+            /* Barcode card - Tăng kích thước để lấp đầy trang và dễ đọc hơn */
+            .barcode-card {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                border-radius: 4px !important;
+                transform: none !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 2px !important;
+                padding: 10px 2px !important; /* Giảm lề ngang của card để barcode dài hơn */
+                min-height: 110px !important; /* Tối ưu để chứa ~8 hàng nhãn trên 1 trang A4 */
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            
+            /* SVG barcode - Tối ưu cho máy quét (PDA/Zebra) */
+            .barcode-card svg {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 50px !important;
+                margin: 4px 0 !important;
+            }
+            
+            /* Text sizes - Tăng lên để dễ đọc */
+            .barcode-card .text-xs, 
+            .barcode-card .text-sm,
+            .barcode-card .text-base {
+                font-size: 10px !important;
+                margin-bottom: 2px !important;
+                margin-top: 0 !important;
+                line-height: 1.2 !important;
+                font-weight: 700 !important;
+                text-align: center !important;
+            }
+            .barcode-card .font-black {
+                font-size: 11px !important;
+                text-decoration: underline !important;
+            }
+            
+            /* Thông tin phụ bên dưới barcode (giá trị mã vạch) */
+            .barcode-card div:last-child {
+                font-size: 9px !important;
+                margin-top: 2px !important;
+                font-weight: 600 !important;
+                color: #000 !important;
+                background: #f0f0f0 !important;
+                padding: 1px 4px !important;
+                border-radius: 2px !important;
+            }
+            /* Hide checkbox when printing */
+            .barcode-card input[type="checkbox"] {
+                display: none !important;
+            }
+            /* Hide copy text when printing */
+            .barcode-card .cursor-pointer {
+                display: none !important;
+            }
+
+            .db-type-columns {
+                display: grid !important;
+                grid-template-columns: repeat(var(--db-cols, 3), minmax(0, 1fr)) !important;
+                gap: var(--db-col-gap, 3mm) !important;
+            }
+            .db-type-col {
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+            .db-type-col-title {
+                font-size: 10px !important;
+                font-weight: 900 !important;
+                text-align: center !important;
+                border-bottom: 1px solid #000 !important;
+                padding-bottom: 2px !important;
+                margin-bottom: 4px !important;
+                text-transform: uppercase !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .db-type-item {
+                margin-bottom: var(--db-item-gap, 1.5mm) !important;
+                min-height: var(--db-item-height, 14mm) !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .db-type-size {
+                font-size: var(--db-size-font, 10px) !important;
+                font-weight: 900 !important;
+                line-height: 1 !important;
+                margin-bottom: 1px !important;
+            }
+            .db-type-item svg {
+                width: 100% !important;
+                min-width: 0 !important;
+                height: auto !important;
+                height: var(--db-barcode-height, 7mm) !important;
+                max-height: none !important;
+                margin: 1mm 0 !important;
+                padding: 0 1.2mm !important;
+                box-sizing: border-box !important;
+                shape-rendering: crispEdges;
+            }
+            .db-type-error {
+                font-size: 9px !important;
+                font-weight: 800 !important;
+            }
+        }

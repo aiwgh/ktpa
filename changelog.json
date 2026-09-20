@@ -1,6 +1,35 @@
 {
   "entries": [
     {
+      "version": "1.1.0",
+      "date": "2026-09-20",
+      "summary": "Tái cấu trúc ứng dụng, cải thiện bố cục in hàng loạt và bổ sung khả năng cá nhân hóa giao diện.",
+      "features": [
+        "Tách HTML, CSS màn hình, CSS in ấn và JavaScript thành các file riêng để dễ bảo trì và triển khai.",
+        "Bổ sung tùy chỉnh bố cục in hàng loạt: 1–4 cột, hướng giấy, lề trang, khoảng cách cột, chiều cao block, chiều cao barcode và khoảng cách item.",
+        "Thêm xem trước danh sách barcode trên nền giấy trắng, gom size và barcode vào cùng một block để dễ kiểm tra trước khi in.",
+        "Bổ sung tùy chỉnh giao diện với preset Indigo, Emerald, Rose, màu chủ đạo, màu nhấn, màu nền, màu tiêu đề, độ bo góc và mật độ giao diện.",
+        "Cho phép người dùng tải ảnh riêng làm nền ứng dụng, xem trước và lưu cấu hình trên thiết bị."
+      ],
+      "improvements": [
+        "Tách riêng phần in barcode khỏi hiệu ứng giao diện để bản in luôn giữ nền trắng và độ tương phản phù hợp cho scan.",
+        "Tự tối ưu bố cục cho trường hợp nhiều loại barcode và nhiều item trên mỗi cột.",
+        "Các vùng giao diện phù hợp có thể sử dụng hiệu ứng trong suốt và blur khi người dùng thiết lập ảnh nền."
+      ],
+      "fixes": [
+        "Sửa tình trạng danh sách barcode hiển thị trực tiếp trên ảnh nền làm giảm khả năng đọc và kiểm tra.",
+        "Sửa bố cục size và barcode bị tách rời trong phần xem trước danh sách.",
+        "Loại bỏ hoàn toàn phần Chế độ Scan đời cũ và các nhánh xử lý liên quan."
+      ],
+      "notes": [
+        "Ảnh nền được lưu cục bộ trên thiết bị đang sử dụng và không được tải lên máy chủ.",
+        "version.json vẫn là phiên bản Database hiện tại; chỉ cập nhật file này khi triển khai Database mới.",
+        "Nếu có lỗi hoặc ý tưởng cải tiến, hãy liên hệ Dev của ứng dụng."
+      ],
+      "breakingchanges": [],
+      "knownissues": []
+    },
+    {
       "version": "1.0.3",
       "date": "2026-06-18",
       "summary": "Bản cập nhật tập trung vào tối ưu tra cứu mã vạch từ Database, cải thiện cache DB và nâng cao trải nghiệm sử dụng trên desktop lẫn điện thoại.",
@@ -18,14 +47,9 @@
       ],
       "notes": [
         "Nếu có bất kỳ lỗi hay có ý tưởng gì hay ho xin hãy liên hệ Dev của ứng dụng để yêu cầu hoặc sửa lỗi nhanh chóng nhất!"
-      ]
-      ,
-      "breakingchanges":[
-        "test"
       ],
-      "knownissues":[
-        "test"
-      ]
+      "breakingchanges": [],
+      "knownissues": []
     }
   ]
 }
