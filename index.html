@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <!-- Thư viện sql.js để đọc file SQLite -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <link rel="stylesheet" href="./css/styles.css?v=1.1.0">
+    <link rel="stylesheet" href="./css/styles.css?v=20260925-glass">
     <link rel="stylesheet" href="./css/print.css?v=1.1.0" media="print">
 </head>
 
@@ -457,6 +457,24 @@
                     <input id="theme-radius" type="range" min="8" max="32" step="2" value="20" oninput="updateThemeFromControls()" class="w-full accent-indigo-600">
                     <span class="text-[10px] text-slate-400">Bo góc hiện tại: <output id="theme-radius-value">20</output> px</span>
                 </label>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-4">
+                    <div>
+                        <div class="text-xs font-black text-slate-700">Hiệu ứng kính mờ</div>
+                        <p class="text-[10px] text-slate-400 mt-1">Chỉ áp dụng khi bạn đã chọn ảnh nền.</p>
+                    </div>
+                    <label class="flex flex-col gap-2 text-xs font-bold text-slate-700">Độ trong: <output id="theme-glass-opacity-value">68%</output>
+                        <input id="theme-glass-opacity" type="range" min="20" max="90" step="1" value="68" oninput="updateThemeFromControls()" class="w-full accent-indigo-600">
+                        <span class="text-[10px] font-normal text-slate-400">Thấp hơn sẽ nhìn thấy ảnh nền rõ hơn.</span>
+                    </label>
+                    <label class="flex flex-col gap-2 text-xs font-bold text-slate-700">Độ mờ: <output id="theme-glass-blur-value">24px</output>
+                        <input id="theme-glass-blur" type="range" min="0" max="40" step="1" value="24" oninput="updateThemeFromControls()" class="w-full accent-indigo-600">
+                        <span class="text-[10px] font-normal text-slate-400">Cao hơn sẽ làm nền phía sau mịn và nhám hơn.</span>
+                    </label>
+                    <label class="flex flex-col gap-2 text-xs font-bold text-slate-700">Độ rực nền: <output id="theme-glass-saturation-value">125%</output>
+                        <input id="theme-glass-saturation" type="range" min="100" max="180" step="1" value="125" oninput="updateThemeFromControls()" class="w-full accent-indigo-600">
+                        <span class="text-[10px] font-normal text-slate-400">Tăng để màu ảnh nền nổi bật hơn.</span>
+                    </label>
+                </div>
                 <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
                     <div class="flex items-center justify-between gap-3">
                         <label for="theme-background-file" class="text-xs font-bold text-slate-700">Ảnh nền ứng dụng</label>
@@ -476,7 +494,7 @@
         </div>
     </div>
 
-    <script src="./js/theme-manager.js?v=1.1.0"></script>
+    <script src="./js/theme-manager.js?v=20260925-glass"></script>
     <script src="./js/core.js?v=1.1.0"></script>
     <script src="./js/database.js?v=1.1.0"></script>
     <script src="./js/barcode.js?v=1.1.0"></script>

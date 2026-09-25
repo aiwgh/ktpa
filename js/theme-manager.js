@@ -12,7 +12,10 @@
         backgroundImage: null,
         backgroundName: '',
         radius: 20,
-        density: 'comfortable'
+        density: 'comfortable',
+        glassOpacity: 68,
+        glassBlur: 24,
+        glassSaturation: 125
     };
 
     const PRESETS = {
@@ -60,7 +63,10 @@
             'theme-surface': themeState.surface,
             'theme-hero': themeState.hero,
             'theme-radius': themeState.radius,
-            'theme-density': themeState.density
+            'theme-density': themeState.density,
+            'theme-glass-opacity': themeState.glassOpacity,
+            'theme-glass-blur': themeState.glassBlur,
+            'theme-glass-saturation': themeState.glassSaturation
         };
 
         Object.entries(values).forEach(([id, value]) => {
@@ -70,6 +76,13 @@
 
         const radiusValue = document.getElementById('theme-radius-value');
         if (radiusValue) radiusValue.textContent = String(themeState.radius);
+
+        const glassOpacityValue = document.getElementById('theme-glass-opacity-value');
+        const glassBlurValue = document.getElementById('theme-glass-blur-value');
+        const glassSaturationValue = document.getElementById('theme-glass-saturation-value');
+        if (glassOpacityValue) glassOpacityValue.textContent = `${themeState.glassOpacity}%`;
+        if (glassBlurValue) glassBlurValue.textContent = `${themeState.glassBlur}px`;
+        if (glassSaturationValue) glassSaturationValue.textContent = `${themeState.glassSaturation}%`;
 
         const preview = document.getElementById('theme-background-preview');
         const name = document.getElementById('theme-background-name');
@@ -89,6 +102,14 @@
         const body = document.body;
         if (!body) return;
 
+        themeState.radius = Math.min(32, Math.max(8, Number(themeState.radius) || DEFAULT_THEME.radius));
+        themeState.glassOpacity = Math.min(90, Math.max(20, Number(themeState.glassOpacity) || DEFAULT_THEME.glassOpacity));
+        const glassBlur = Number(themeState.glassBlur);
+        themeState.glassBlur = Number.isFinite(glassBlur)
+            ? Math.min(40, Math.max(0, glassBlur))
+            : DEFAULT_THEME.glassBlur;
+        themeState.glassSaturation = Math.min(180, Math.max(100, Number(themeState.glassSaturation) || DEFAULT_THEME.glassSaturation));
+
         root.style.setProperty('--theme-primary', themeState.primary);
         root.style.setProperty('--theme-accent', themeState.accent);
         root.style.setProperty('--theme-page', themeState.page);
@@ -98,7 +119,11 @@
         root.style.setProperty('--theme-background-image', themeState.backgroundImage ? `url(${themeState.backgroundImage})` : 'none');
         root.style.setProperty('--theme-radius', `${themeState.radius}px`);
         root.style.setProperty('--theme-density-scale', themeState.density === 'compact' ? '0.88' : '1');
+        root.style.setProperty('--theme-glass-opacity', `${themeState.glassOpacity}%`);
+        root.style.setProperty('--theme-glass-blur', `${themeState.glassBlur}px`);
+        root.style.setProperty('--theme-glass-saturation', `${themeState.glassSaturation}%`);
         body.classList.add('theme-enabled');
+        body.classList.toggle('theme-has-background', Boolean(themeState.backgroundImage));
         body.dataset.themeDensity = themeState.density;
         syncThemeControls();
         saveTheme();
@@ -122,6 +147,12 @@
         themeState.hero = read('theme-hero', themeState.hero);
         themeState.radius = Math.min(32, Math.max(8, Number(read('theme-radius', themeState.radius)) || themeState.radius));
         themeState.density = read('theme-density', themeState.density) === 'compact' ? 'compact' : 'comfortable';
+        themeState.glassOpacity = Math.min(90, Math.max(20, Number(read('theme-glass-opacity', themeState.glassOpacity)) || themeState.glassOpacity));
+        const glassBlur = Number(read('theme-glass-blur', themeState.glassBlur));
+        themeState.glassBlur = Number.isFinite(glassBlur)
+            ? Math.min(40, Math.max(0, glassBlur))
+            : themeState.glassBlur;
+        themeState.glassSaturation = Math.min(180, Math.max(100, Number(read('theme-glass-saturation', themeState.glassSaturation)) || themeState.glassSaturation));
         applyTheme();
     };
 
